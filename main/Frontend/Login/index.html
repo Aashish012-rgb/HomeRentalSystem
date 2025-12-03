@@ -9,15 +9,20 @@
 </head>
 
 <body>
+    <div class="welcome-header">
+        <h1>Welcome to Hamro Ghar</h1>
+        <p>Your Home Rental Solution</p>
+    </div>
     <div class="container">
-        <form class="login-box">
+        <!-- Login Form -->
+        <form class="login-box" id="loginForm">
             <h2>Login</h2>
 
             <label for="username">Username</label>
-            <input type="text" id="username" placeholder="Enter Username">
+            <input type="text" id="username" placeholder="Enter Username" required>
 
             <label for="password">Password</label>
-            <input type="password" id="password" placeholder="Enter Password">
+            <input type="password" id="password" placeholder="Enter Password" required>
             <div class="options">
                 <label for="remember" class="remember-label">
                     <input type="checkbox" id="remember" name="remember"> <span>Remember Me</span>
@@ -25,9 +30,70 @@
                 <a href="#" class="forgot">Forgot Password?</a>
             </div>
             <button class="btn" type="submit">Login</button>
-            <p class="register-text">Don't have an account? <a href="#" class="register-link">Register</a></p>
+            <p class="register-text">Don't have an account? <a href="#" class="register-link" id="registerBtn">Register</a></p>
+            <p id="loginMessage" class="message"></p>
         </form>
     </div>
+
+    <!-- Registration Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Create Account</h2>
+            <form id="registerForm">
+                <label for="regUsername">Username</label>
+                <input type="text" id="regUsername" placeholder="Choose a Username" required>
+
+                <label for="regEmail">Email</label>
+                <input type="email" id="regEmail" placeholder="Enter Email" required>
+
+                <label for="regPassword">Password</label>
+                <input type="password" id="regPassword" placeholder="Enter Password" required>
+
+                <label for="regConfirmPassword">Confirm Password</label>
+                <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
+
+                <button class="btn" type="submit">Register</button>
+                <p id="registerMessage" class="message"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Dashboard Modal -->
+    <div id="dashboardModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>User Dashboard</h2>
+            <div id="userInfo" class="user-info">
+                <p><strong>Username:</strong> <span id="dashUsername"></span></p>
+                <p><strong>Email:</strong> <span id="dashEmail"></span></p>
+            </div>
+            <button id="editBtn" class="btn">Edit Profile</button>
+            <button id="deleteBtn" class="btn btn-danger">Delete Account</button>
+            <button id="logoutBtn" class="btn">Logout</button>
+            <p id="dashboardMessage" class="message"></p>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Edit Profile</h2>
+            <form id="editForm">
+                <label for="editUsername">Username</label>
+                <input type="text" id="editUsername" placeholder="Username" required>
+
+                <label for="editEmail">Email</label>
+                <input type="email" id="editEmail" placeholder="Email" required>
+
+                <button class="btn" type="submit">Save Changes</button>
+                <p id="editMessage" class="message"></p>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 
 </html>
