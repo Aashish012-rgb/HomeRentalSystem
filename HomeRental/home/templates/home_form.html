@@ -5,15 +5,23 @@ Real pages
 {% endblock %}
 
 {% block content %}
-
-<h2 class="mt-4">{% if form.instance.pk %}Edit Home{% else %}Create Home{% endif %}</h2>
+<h1 class=" text-center mt-4> welcome to the home rental system</h1>
+<h2 class="mt-4">{% if form.instance.pk %}
+Edit Home
+{% else %}
+Create Home
+{% endif %}
+</h2>
 
 <form method="post" enctype="multipart/form-data" class="mt-3">
-    {% csrf_token %}
+    
+{% comment %} his is a default applicaion i django and that is hidden and the value changes witthe eer refreshto the page  {% endcomment %}
+ {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">
-        {% if form.instance.pk %}Update{% else %}Create{% endif %}
+    <button type="submit" class="btn btn-warning">
+        {% if form.instance.pk %}Update{% else %}Submit{% endif %}
     </button>
-    <a href="{% url 'home_list' %}" class="btn btn-secondary">Cancel</a>
 </form>
+<a href="{% url 'home_list' %}" class="btn btn-secondary">Cancel</a>
+
 {% endblock %}
