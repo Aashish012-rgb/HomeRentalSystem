@@ -4,85 +4,24 @@
 {% if is_edit %}Edit Property{% else %}Create Property{% endif %}
 {% endblock %}
 
-{% block extra_head %}
-<style>
-  .property-form-wrap {
-    max-width: 760px;
-    margin: 2rem auto;
-    padding: 0 1rem;
-  }
-
-  .property-form-card {
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    padding: 1.2rem;
-  }
-
-  .property-form-card h1 {
-    margin: 0 0 1rem;
-    font-size: 1.6rem;
-  }
-
-  .property-form-card p {
-    margin-bottom: 0.9rem;
-  }
-
-  .property-form-card label {
-    display: block;
-    margin-bottom: 0.4rem;
-    font-weight: 600;
-  }
-
-  .property-form-card input,
-  .property-form-card textarea,
-  .property-form-card select {
-    width: 100%;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 0.55rem 0.7rem;
-    background: #fff;
-  }
-
-  .form-actions {
-    margin-top: 1rem;
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-
-  .btn-save,
-  .btn-cancel {
-    text-decoration: none;
-    border: none;
-    border-radius: 8px;
-    padding: 0.55rem 1rem;
-  }
-
-  .btn-save {
-    background: #88a0d8;
-    color: #fff;
-  }
-
-  .btn-cancel {
-    background: #d8d8d8;
-    color: #111;
-  }
-</style>
-{% endblock %}
-
 {% block content %}
-<section class="property-form-wrap">
-  <div class="property-form-card">
-    <h1>{% if is_edit %}Edit Property{% else %}Create Property{% endif %}</h1>
+<section class="container py-4 py-lg-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h1 class="h3 mb-4">{% if is_edit %}Edit Property{% else %}Create Property{% endif %}</h1>
     <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
       {{ form.as_p }}
-      <div class="form-actions">
-        <button class="btn-save" type="submit">{% if is_edit %}Update{% else %}Create{% endif %}</button>
-        <a class="btn-cancel" href="{% url 'properties' %}">Cancel</a>
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-primary" type="submit">{% if is_edit %}Update{% else %}Create{% endif %}</button>
+        <a class="btn btn-outline-secondary" href="{% url 'properties' %}">Cancel</a>
       </div>
     </form>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 {% endblock %}

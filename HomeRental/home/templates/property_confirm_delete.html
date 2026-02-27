@@ -5,15 +5,23 @@ Delete Property
 {% endblock %}
 
 {% block content %}
-<section style="max-width:700px;margin:2rem auto;padding:0 1rem;">
-  <div style="background:#fff;border:1px solid #ddd;border-radius:12px;padding:1.2rem;">
-    <h1 style="margin-top:0;">Delete Property</h1>
-    <p>Are you sure you want to delete <strong>{{ property.title }}</strong>?</p>
+<section class="container py-4 py-lg-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-7">
+      <div class="card border-danger-subtle shadow-sm">
+        <div class="card-body p-4">
+          <h1 class="h3 mb-3">Delete Property</h1>
+          <p class="mb-4">Are you sure you want to delete <strong>{{ property.title }}</strong>?</p>
     <form method="post">
       {% csrf_token %}
-      <button type="submit" style="border:none;background:#cc3c3c;color:#fff;border-radius:8px;padding:0.55rem 0.95rem;">Yes, Delete</button>
-      <a href="{% url 'properties' %}" style="display:inline-block;text-decoration:none;background:#d8d8d8;color:#111;border-radius:8px;padding:0.55rem 0.95rem;">Cancel</a>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        <a href="{% url 'properties' %}" class="btn btn-outline-secondary">Cancel</a>
+      </div>
     </form>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 {% endblock %}

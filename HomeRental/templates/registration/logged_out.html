@@ -1,9 +1,19 @@
 {% extends "layout.html" %}
 
+{% block title %}Logged Out | HomeRental{% endblock %}
+
 {% block content %}
-<h2>logged out </h2>
-
-
-<p>YOU HAVE BEEN logged out  <a href="{% url 'login'%}"></a> 
-register here </p>
+<section class="container py-4 py-lg-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-body p-4 text-center">
+          <h2 class="h4 mb-3">Logged Out</h2>
+          <p class="mb-4">You have been logged out successfully.</p>
+          <a href="{% url 'login' %}" class="btn btn-primary">Sign In Again</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}

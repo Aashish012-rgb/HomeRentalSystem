@@ -1,6 +1,4 @@
-
 {% extends "layout.html" %}
-
 
 {% block title %}
 Home Rental
@@ -8,139 +6,65 @@ Home Rental
 
 {% block extra_head %}
 <style>
-  .home-hero-wrap {
-    max-width: 1260px;
-    margin: 0 auto;
-    padding: 2.4rem 1.5rem 1.2rem;
+  .hero-image-animate {
+    animation: heroFloatIn 1s ease-out both;
   }
 
-  .home-hero {
-    display: grid;
-    grid-template-columns: 1fr 1.05fr;
-    gap: 3rem;
-    align-items: start;
-  }
-
-  .home-hero h1 {
-    font-size: clamp(2.4rem, 4vw, 4rem);
-    line-height: 1.1;
-    font-weight: 700;
-    margin: 0 0 2rem;
-    color: #111;
-  }
-
-  .hero-copy p {
-    font-size: clamp(1.05rem, 1.3vw, 1.9rem);
-    line-height: 1.45;
-    margin-bottom: 1.15rem;
-    color: #1e1e1e;
-    max-width: 32ch;
-  }
-
-  .hero-actions {
-    margin-top: 2rem;
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-
-  .hero-btn {
-    text-decoration: none;
-    border-radius: 999px;
-    padding: 0.8rem 2.05rem;
-    font-size: clamp(1rem, 1.1vw, 1.6rem);
-    color: #1b1b1b;
-    min-width: 175px;
-    text-align: center;
-    transition: transform 0.15s ease;
-  }
-
-  .hero-btn:hover {
-    transform: translateY(-1px);
-  }
-
-  .hero-btn-primary {
-    background: #88a0d8;
-    color: #fff;
-  }
-
-  .hero-btn-secondary {
-    background: #d3d3d3;
-  }
-
-  .hero-media img {
-    width: 100%;
-    max-width: 680px;
-    height: clamp(280px, 33vw, 450px);
-    object-fit: cover;
-    display: block;
-  }
-
-  .home-list-wrap {
-    max-width: 1260px;
-    margin: 0 auto;
-    padding: 1rem 1.5rem 2rem;
-  }
-
-  .home-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1rem;
-  }
-
-  @media (max-width: 900px) {
-    .home-hero {
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
+  @keyframes heroFloatIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
     }
-
-    .hero-copy p {
-      max-width: 60ch;
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
     }
   }
 </style>
 {% endblock %}
 
 {% block content %}
-
-<section class="home-hero-wrap">
-  <div class="home-hero">
-    <div class="hero-copy">
-      <h1>Find Your<br>Perfect Home</h1>
-      <p>Discover the easiest way to rent houses, rooms, and apartments.</p>
-      <p>Our automated system connects property owners with tenants seamlessly.</p>
-      <p>Save time, reduce paperwork, and find your dream home today.</p>
-      <div class="hero-actions">
-        <a class="hero-btn hero-btn-primary" href="{% url 'properties' %}">Browse Properties</a>
-        <a class="hero-btn hero-btn-secondary" href="{% url 'home_create' %}">List Property</a>
+<section class="container py-4 py-lg-5">
+  <div class="row g-4 g-lg-5 align-items-start">
+    <div class="col-12 col-lg-6">
+      <h1 class="display-4 fw-bold lh-1 mb-4">Find Your<br>Perfect Home</h1>
+      <p class="fs-5 mb-3">Discover the easiest way to rent houses, rooms, and apartments.</p>
+      <p class="fs-5 mb-3">Our automated system connects property owners with tenants seamlessly.</p>
+      <p class="fs-5 mb-4">Save time, reduce paperwork, and find your dream home today.</p>
+      <div class="d-flex flex-wrap gap-3">
+        <a class="btn btn-primary rounded-pill px-4 py-2" href="{% url 'properties' %}">Browse Properties</a>
+        <a class="btn btn-secondary rounded-pill px-4 py-2" href="{% url 'home_create' %}">List Property</a>
       </div>
     </div>
-    <div class="hero-media">
-      <img src="/media/photos/individual_software_.jpg" alt="Modern rental home with pool">
+    <div class="col-12 col-lg-6">
+      <img class="img-fluid w-100 rounded shadow-sm hero-image-animate" src="/media/photos/individual_software_.jpg" alt="Modern rental home with pool">
     </div>
   </div>
 </section>
 
-<section class="home-list-wrap">
-  <div class="home-cards">
-  {% for home in homes %}
-  <div class="card">
-{% if home.photo %}
-  <img src="{{ home.photo.url }}" class="card-img-top" alt="Home photo">
-{% else %}
-  <p>No photo uploaded</p>
-{% endif %}
-  <div class="card-body">
-    <h5 class="card-title">{{home.user.username}}</h5>
-    <p class="card-text">{{home.text}}</p>
-    <a href="{% url 'home_edit' home.id %}" class="btn btn-primary">Edit</a>
-    <a href="{% url 'home_delete' home.id %}" class="btn btn-danger">Delete</a>
-
-
+<section class="container pb-4 pb-lg-5">
+  <div class="row g-4">
+    {% for home in homes %}
+    <div class="col-12 col-md-6 col-lg-4">
+      <article class="card h-100 shadow-sm">
+        {% if home.photo %}
+        <img src="{{ home.photo.url }}" class="card-img-top" alt="Home photo">
+        {% endif %}
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title mb-2">{{ home.user.username }}</h5>
+          <p class="card-text mb-3">{{ home.text }}</p>
+          <div class="mt-auto d-flex gap-2">
+            <a href="{% url 'home_edit' home.id %}" class="btn btn-outline-primary btn-sm">Edit</a>
+            <a href="{% url 'home_delete' home.id %}" class="btn btn-outline-danger btn-sm">Delete</a>
+          </div>
+        </div>
+      </article>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-light border mb-0">No homes found.</div>
+    </div>
+    {% endfor %}
   </div>
-</div>
-  {% endfor %}
-</div>
 </section>
-
 {% endblock %}

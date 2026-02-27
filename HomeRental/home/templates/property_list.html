@@ -4,129 +4,41 @@
 Properties
 {% endblock %}
 
-{% block extra_head %}
-<style>
-  .properties-wrap {
-    max-width: 1260px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem;
-  }
-
-  .properties-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.4rem;
-  }
-
-  .properties-header h1 {
-    font-size: 2rem;
-    margin: 0;
-  }
-
-  .btn-pill {
-    display: inline-block;
-    text-decoration: none;
-    border-radius: 999px;
-    padding: 0.6rem 1.2rem;
-    background: #88a0d8;
-    color: #fff;
-  }
-
-  .property-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1rem;
-  }
-
-  .property-card {
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  .property-card img {
-    width: 100%;
-    height: 190px;
-    object-fit: cover;
-    display: block;
-  }
-
-  .property-body {
-    padding: 0.9rem;
-  }
-
-  .property-title {
-    margin: 0 0 0.4rem;
-    font-size: 1.1rem;
-    font-weight: 700;
-  }
-
-  .property-meta {
-    margin: 0.2rem 0;
-    color: #444;
-  }
-
-  .property-actions {
-    margin-top: 0.9rem;
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-
-  .btn-edit,
-  .btn-delete {
-    border: none;
-    border-radius: 8px;
-    padding: 0.45rem 0.8rem;
-    text-decoration: none;
-    color: #fff;
-    font-size: 0.92rem;
-  }
-
-  .btn-edit {
-    background: #2f7cc0;
-  }
-
-  .btn-delete {
-    background: #cc3c3c;
-  }
-</style>
-{% endblock %}
-
 {% block content %}
-<section class="properties-wrap">
-  <div class="properties-header">
-    <h1>Properties</h1>
+<section class="container py-4 py-lg-5">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <h1 class="h2 mb-0">Properties</h1>
     {% if user.is_authenticated %}
-    <a class="btn-pill" href="{% url 'property' %}">Create Property</a>
+    <a class="btn btn-primary rounded-pill px-4" href="{% url 'property' %}">Create Property</a>
     {% endif %}
   </div>
 
-  <div class="property-grid">
+  <div class="row g-4">
     {% for property in properties %}
-    <article class="property-card">
-      {% if property.image %}
-      <img src="{{ property.image.url }}" alt="{{ property.title }}">
-      {% endif %}
-      <div class="property-body">
-        <h2 class="property-title">{{ property.title }}</h2>
-        <p class="property-meta"><strong>Location:</strong> {{ property.location }}</p>
-        <p class="property-meta"><strong>Type:</strong> {{ property.property_type|title }}</p>
-        <p class="property-meta"><strong>Price:</strong> {{ property.price }}</p>
-        <p class="property-meta">{{ property.description|truncatewords:16 }}</p>
+    <div class="col-12 col-md-6 col-lg-4">
+      <article class="card h-100 shadow-sm">
+        {% if property.image %}
+        <img src="{{ property.image.url }}" class="card-img-top" alt="{{ property.title }}">
+        {% endif %}
+        <div class="card-body d-flex flex-column">
+          <h2 class="h5 card-title">{{ property.title }}</h2>
+          <p class="mb-1"><strong>Location:</strong> {{ property.location }}</p>
+          <p class="mb-1"><strong>Type:</strong> {{ property.property_type|title }}</p>
+          <p class="mb-2"><strong>Price:</strong> {{ property.price }}</p>
+          <p class="text-muted mb-3">{{ property.description|truncatewords:16 }}</p>
         {% if user.is_authenticated and property.user_id == user.id %}
-        <div class="property-actions">
-          <a class="btn-edit" href="{% url 'property_edit' property.id %}">Edit</a>
-          <a class="btn-delete" href="{% url 'property_delete' property.id %}">Delete</a>
+        <div class="d-flex gap-2 mt-auto">
+          <a class="btn btn-outline-primary btn-sm" href="{% url 'property_edit' property.id %}">Edit</a>
+          <a class="btn btn-outline-danger btn-sm" href="{% url 'property_delete' property.id %}">Delete</a>
         </div>
         {% endif %}
-      </div>
-    </article>
+        </div>
+      </article>
+    </div>
     {% empty %}
-    <p>No properties found.</p>
+    <div class="col-12">
+      <div class="alert alert-light border mb-0">No properties found.</div>
+    </div>
     {% endfor %}
   </div>
 </section>

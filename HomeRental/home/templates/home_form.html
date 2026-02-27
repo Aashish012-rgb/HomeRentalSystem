@@ -1,27 +1,31 @@
 {% extends "layout.html" %}
 
 {% block title %}
-Real pages 
+Home Form
 {% endblock %}
 
 {% block content %}
-<h1 class=" text-center mt-4> welcome to the home rental system</h1>
-<h2 class="mt-4">{% if form.instance.pk %}
-Edit Home
-{% else %}
-Create Home
-{% endif %}
-</h2>
+<section class="container py-4 py-lg-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h1 class="h3 text-center mb-4">Welcome to the Home Rental System</h1>
+          <h2 class="h5 mb-4">{% if form.instance.pk %}Edit Home{% else %}Create Home{% endif %}</h2>
 
-<form method="post" enctype="multipart/form-data" class="mt-3">
-    
-{% comment %} his is a default applicaion i django and that is hidden and the value changes witthe eer refreshto the page  {% endcomment %}
- {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-warning">
-        {% if form.instance.pk %}Update{% else %}Submit{% endif %}
-    </button>
-</form>
-<a href="{% url 'home_list' %}" class="btn btn-secondary">Cancel</a>
-
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary">
+                {% if form.instance.pk %}Update{% else %}Submit{% endif %}
+              </button>
+              <a href="{% url 'home_list' %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}

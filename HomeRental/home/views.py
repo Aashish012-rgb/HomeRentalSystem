@@ -52,7 +52,7 @@ def home_delete(request, home_id):
 # for the  login gistration
 def register(request):
     if request.method == 'POST':
-        UserRegistrationForm(request.POST)
+        form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save(commit= False)
             user.set_password(form.cleaned_data['password1'])
@@ -79,29 +79,31 @@ def add_property(request):
 
     return render(request, 'add_property.html', {'form': form})
 
-@login_required
-def property_edit(request, property_id):
-    prop_obj = get_object_or_404(Property, pk=property_id, user=request.user)
-    if request.method == 'POST':
-        form = PropertyForm(request.POST, request.FILES, instance=prop_obj)
-        if form.is_valid():
-            prop_obj = form.save(commit=False)
-            prop_obj.user = request.user
-            prop_obj.save()
-            return redirect('properties')
-    else:
-        form = PropertyForm(instance=prop_obj)
-    return render(request, 'add_property.html', {'form': form, 'is_edit': True})
-
-
-@login_required
-def property_delete(request, property_id):
-    prop_obj = get_object_or_404(Property, pk=property_id, user=request.user)
-    if request.method == 'POST':
-        prop_obj.delete()
-        return redirect('properties')
-    return render(request, 'property_confirm_delete.html', {'property': prop_obj})
 
 def property_list(request):
     properties = Property.objects.all()
     return render(request, 'property_list.html',{'properties':properties})
+
+
+@login_required
+def property_edit(request, property_id):
+    prop = get_object_or_404(Property, pk=property_id, user=request.user)
+    if request.method == 'POST':
+        form = PropertyForm(request.POST, request.FILES, instance=prop)
+        if form.is_valid():
+            prop = form.save(commit=False)
+            prop.user = request.user
+            prop.save()
+            return redirect('properties')
+    else:
+        form = PropertyForm(instance=prop)
+    return render(request, 'add_property.html', {'form': form})
+
+
+@login_required
+def property_delete(request, property_id):
+    prop = get_object_or_404(Property, pk=property_id, user=request.user)
+    if request.method == 'POST':
+        prop.delete()
+        return redirect('properties')
+    return render(request, 'property_confirm_delete.html', {'property': prop})
