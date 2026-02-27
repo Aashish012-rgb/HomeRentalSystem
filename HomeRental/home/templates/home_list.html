@@ -3,17 +3,128 @@
 
 
 {% block title %}
-Real pages 
+Home Rental
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .home-hero-wrap {
+    max-width: 1260px;
+    margin: 0 auto;
+    padding: 2.4rem 1.5rem 1.2rem;
+  }
+
+  .home-hero {
+    display: grid;
+    grid-template-columns: 1fr 1.05fr;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  .home-hero h1 {
+    font-size: clamp(2.4rem, 4vw, 4rem);
+    line-height: 1.1;
+    font-weight: 700;
+    margin: 0 0 2rem;
+    color: #111;
+  }
+
+  .hero-copy p {
+    font-size: clamp(1.05rem, 1.3vw, 1.9rem);
+    line-height: 1.45;
+    margin-bottom: 1.15rem;
+    color: #1e1e1e;
+    max-width: 32ch;
+  }
+
+  .hero-actions {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .hero-btn {
+    text-decoration: none;
+    border-radius: 999px;
+    padding: 0.8rem 2.05rem;
+    font-size: clamp(1rem, 1.1vw, 1.6rem);
+    color: #1b1b1b;
+    min-width: 175px;
+    text-align: center;
+    transition: transform 0.15s ease;
+  }
+
+  .hero-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .hero-btn-primary {
+    background: #88a0d8;
+    color: #fff;
+  }
+
+  .hero-btn-secondary {
+    background: #d3d3d3;
+  }
+
+  .hero-media img {
+    width: 100%;
+    max-width: 680px;
+    height: clamp(280px, 33vw, 450px);
+    object-fit: cover;
+    display: block;
+  }
+
+  .home-list-wrap {
+    max-width: 1260px;
+    margin: 0 auto;
+    padding: 1rem 1.5rem 2rem;
+  }
+
+  .home-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+
+  @media (max-width: 900px) {
+    .home-hero {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .hero-copy p {
+      max-width: 60ch;
+    }
+  }
+</style>
 {% endblock %}
 
 {% block content %}
 
-<h1 class="text-center text-white mt-4" >Hello buddy </h1>
-<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias consectetur sequi dolorem! Unde doloremque hic debitis laborum repellat sed saepe facere minus explicabo earum. Nam, repellat. Aut omnis aspernatur harum.</p>
-<a class="btn btn-primary rounded mb-4 " href="{% url 'home_create' %}">create a Home</a>
-<div class="container row gap-3">
+<section class="home-hero-wrap">
+  <div class="home-hero">
+    <div class="hero-copy">
+      <h1>Find Your<br>Perfect Home</h1>
+      <p>Discover the easiest way to rent houses, rooms, and apartments.</p>
+      <p>Our automated system connects property owners with tenants seamlessly.</p>
+      <p>Save time, reduce paperwork, and find your dream home today.</p>
+      <div class="hero-actions">
+        <a class="hero-btn hero-btn-primary" href="{% url 'properties' %}">Browse Properties</a>
+        <a class="hero-btn hero-btn-secondary" href="{% url 'home_create' %}">List Property</a>
+      </div>
+    </div>
+    <div class="hero-media">
+      <img src="/media/photos/individual_software_.jpg" alt="Modern rental home with pool">
+    </div>
+  </div>
+</section>
+
+<section class="home-list-wrap">
+  <div class="home-cards">
   {% for home in homes %}
-  <div class="card" style="width: 18rem;">
+  <div class="card">
 {% if home.photo %}
   <img src="{{ home.photo.url }}" class="card-img-top" alt="Home photo">
 {% else %}
@@ -30,6 +141,6 @@ Real pages
 </div>
   {% endfor %}
 </div>
-
+</section>
 
 {% endblock %}
