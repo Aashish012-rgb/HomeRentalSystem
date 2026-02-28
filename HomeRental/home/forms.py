@@ -1,7 +1,10 @@
 from django import forms 
 from .models import home, Property
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+
+User = get_user_model()
 
 class homeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -17,8 +20,11 @@ class homeForm(forms.ModelForm):
         fields =['text','photo']
 
 
-class UserRegistrationForm(UserCreationForm):
+class UserRegistrationForm(forms.Form):
+    username = forms.CharField(max_length=150, strip=False, help_text="")
     email = forms.EmailField()
+    password1 = forms.CharField(widget=forms.PasswordInput, strip=False)
+    password2 = forms.CharField(widget=forms.PasswordInput, strip=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -27,9 +33,38 @@ class UserRegistrationForm(UserCreationForm):
             if "password" in field_name:
                 field.widget.attrs["autocomplete"] = "new-password"
 
-    class Meta:
-        model = User
-        fields = ('username', 'email', 'password1', 'password2')
+    def clean_username(self):
+        username = self.cleaned_data["username"]
+        if User.objects.filter(username=username).exists():
+            raise ValidationError("A user with that username already exists.")
+        return username
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get("password1")
+        password2 = cleaned_data.get("password2")
+
+        if password1 and password2 and password1 != password2:
+            self.add_error("password2", "The two password fields didn't match.")
+
+        if password1:
+            user = User(
+                username=cleaned_data.get("username", ""),
+                email=cleaned_data.get("email", ""),
+            )
+            try:
+                validate_password(password1, user=user)
+            except ValidationError as exc:
+                self.add_error("password1", exc)
+
+        return cleaned_data
+
+    def save(self):
+        return User.objects.create_user(
+            username=self.cleaned_data["username"],
+            email=self.cleaned_data["email"],
+            password=self.cleaned_data["password1"],
+        )
 
 class PropertyForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
