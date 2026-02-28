@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ property.title }}{% endblock %}
+
+{% block content %}
+<section class="container py-4 py-lg-5">
+    <article class="card shadow-sm">
+        {% if property.image %}
+        <img src="{{ property.image.url }}" class="card-img-top" alt="{{ property.title }}">
+        {% endif %}
+        <div class="card-body">
+            <h1 class="h3">{{ property.title }}</h1>
+            <p class="mb-1"><strong>Location:</strong> {{ property.location }}</p>
+            <p class="mb-1"><strong>Type:</strong> {{ property.property_type|title }}</p>
+            <p class="mb-3"><strong>Price:</strong> {{ property.price }}</p>
+            <p class="mb-4">{{ property.description }}</p>
+
+            <a href="{% url 'properties' %}" class="btn btn-outline-secondary">Back to Properties</a>
+        </div>
+    </article>
+</section>
+{% endblock %}

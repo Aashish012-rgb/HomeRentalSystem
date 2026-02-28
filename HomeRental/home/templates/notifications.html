@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<section class="container py-4 py-lg-5">
+    <h1 class="h3 mb-4">Booking Notifications</h1>
+
+    {% for notification in notifications %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <a class="text-decoration-none text-dark" href="{% url 'property_detail' notification.property.id %}">
+                <strong>{{ notification.booked_by.username }}</strong>
+                booked your property
+                <strong>{{ notification.property.title }}</strong>
+            </a>
+            <div class="d-flex align-items-center justify-content-between mt-2">
+                <small class="text-muted">{{ notification.booked_at }}</small>
+                {% if not notification.is_read %}
+                <form method="post" action="{% url 'mark_notification_read' notification.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Mark as read</button>
+                </form>
+                {% else %}
+                <span class="badge bg-secondary">Read</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="alert alert-light border mb-0">No notifications yet.</div>
+    {% endfor %}
+</section>
+{% endblock %}

@@ -28,6 +28,14 @@ Properties
           <p class="mb-1"><strong>Type:</strong> {{ property.property_type|title }}</p>
           <p class="mb-2"><strong>Price:</strong> {{ property.price }}</p>
           <p class="text-muted mb-3">{{ property.description|truncatewords:16 }}</p>
+          {% if request.user != property.user %}
+          <form method="POST" action="{% url 'book_property' property.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success">
+              Book Now
+            </button>
+          </form>
+          {% endif %}
         {% if user.is_authenticated and property.user_id == user.id %}
         <div class="d-flex gap-2 mt-auto">
           <a class="btn btn-outline-primary btn-sm" href="{% url 'property_edit' property.id %}">Edit</a>

@@ -11,7 +11,11 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('property/', views.add_property, name='property'),
     path('properties/', views.property_list, name='properties'),
+    path('properties/<int:property_id>/', views.property_detail, name='property_detail'),
     path('properties/<int:property_id>/edit/', views.property_edit, name='property_edit'),
     path('properties/<int:property_id>/delete/', views.property_delete, name='property_delete'),
+    path('book/<int:property_id>/', views.book_property, name='book_property'),
+    path('notifications/', views.notifications, name='notifications'),
+    path('notifications/<int:notification_id>/read/', views.mark_notification_read, name='mark_notification_read'),
 
 ] 

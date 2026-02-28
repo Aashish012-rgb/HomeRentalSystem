@@ -249,14 +249,16 @@
                     <li class="nav-item"><a class="nav-link site-nav-link" href="{% url 'properties' %}">Properties</a></li>
                     <li class="nav-item"><a class="nav-link site-nav-link" href="#">About</a></li>
                     <li class="nav-item"><a class="nav-link site-nav-link" href="#">Contact</a></li>
+                    {% if request.user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="icon-link" href="#" aria-label="Search">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <circle cx="11" cy="11" r="7"></circle>
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m20 20-3.4-3.4"></path>
-                            </svg>
+                        <a href="{% url 'notifications' %}" class="nav-link site-nav-link">
+                            Notifications
+                            {% if unread_notifications_count > 0 %}
+                            <span class="badge bg-danger">{{ unread_notifications_count }}</span>
+                            {% endif %}
                         </a>
                     </li>
+                    {% endif %}
                     <li class="nav-item dropdown">
                         <button class="btn icon-link user-toggle border-0 bg-transparent p-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

@@ -12,7 +12,7 @@ class home(models.Model):
 class Property(models.Model):
     PROPERTY_TYPE =(
         ('rent','Rent'),
-        ('sale','Sale')
+        ('sell','Sell')
 
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -24,6 +24,15 @@ class Property(models.Model):
     image= models.ImageField(upload_to='property_images/')
     created_at= models.DateTimeField(auto_now_add=True)
 
+
+class Booking(models.Model):
+    property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    booked_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bookings")
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="owner_bookings")
+    booked_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+   
 
     def __str__(self):
         return f'{self.user.username}- {self.title}'
