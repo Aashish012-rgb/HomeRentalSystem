@@ -10,7 +10,7 @@
         <div class="card-body p-4 p-lg-5">
           <h1 class="h3 text-center mb-4">Create Account</h1>
 
-          <form method="post" novalidate>
+          <form method="post" enctype="multipart/form-data" novalidate>
             {% csrf_token %}
 
             {% if form.non_field_errors %}

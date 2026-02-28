@@ -18,7 +18,9 @@ Properties
     <div class="col-12 col-md-6 col-lg-4">
       <article class="card h-100 shadow-sm">
         {% if property.image %}
-        <img src="{{ property.image.url }}" class="card-img-top" alt="{{ property.title }}">
+        <div class="image-hover-wrap">
+          <img src="{{ property.image.url }}" class="card-img-top image-hover-zoom" alt="{{ property.title }}">
+        </div>
         {% endif %}
         <div class="card-body d-flex flex-column">
           <h2 class="h5 card-title">{{ property.title }}</h2>

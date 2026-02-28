@@ -36,8 +36,8 @@ Home Rental
         <a class="btn btn-secondary rounded-pill px-4 py-2" href="{% url 'home_create' %}">List Property</a>
       </div>
     </div>
-    <div class="col-12 col-lg-6">
-      <img class="img-fluid w-100 rounded shadow-sm hero-image-animate" src="/media/photos/individual_software_.jpg" alt="Modern rental home with pool">
+    <div class="col-12 col-lg-6 image-hover-wrap">
+      <img class="img-fluid w-100 rounded shadow-sm hero-image-animate image-hover-zoom" src="/media/photos/individual_software_.jpg" alt="Modern rental home with pool">
     </div>
   </div>
 </section>
@@ -48,7 +48,9 @@ Home Rental
     <div class="col-12 col-md-6 col-lg-4">
       <article class="card h-100 shadow-sm">
         {% if home.photo %}
-        <img src="{{ home.photo.url }}" class="card-img-top" alt="Home photo">
+        <div class="image-hover-wrap">
+          <img src="{{ home.photo.url }}" class="card-img-top image-hover-zoom" alt="Home photo">
+        </div>
         {% endif %}
         <div class="card-body d-flex flex-column">
           <h5 class="card-title mb-2">{{ home.user.username }}</h5>
