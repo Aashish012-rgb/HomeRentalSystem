@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Delete Property
+{% endblock %}
+
+{% block content %}
+<section class="container py-4 py-lg-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-7">
+      <div class="card border-danger-subtle shadow-sm">
+        <div class="card-body p-4">
+          <h1 class="h3 mb-3">Delete Property</h1>
+          <p class="mb-4">Are you sure you want to delete <strong>{{ property.title }}</strong>?</p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        <a href="{% url 'properties' %}" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

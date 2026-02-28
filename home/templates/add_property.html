@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block title %}
+{% if is_edit %}Edit Property{% else %}Create Property{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="container py-4 py-lg-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h1 class="h3 mb-4">{% if is_edit %}Edit Property{% else %}Create Property{% endif %}</h1>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-primary" type="submit">{% if is_edit %}Update{% else %}Create{% endif %}</button>
+        <a class="btn btn-outline-secondary" href="{% url 'properties' %}">Cancel</a>
+      </div>
+    </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

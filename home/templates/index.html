@@ -3,11 +3,52 @@
 
 
 {% block title %}
-Real pages 
+Home Rental
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .hero-image-animate {
+    animation: heroFloatIn 1s ease-out both;
+  }
+
+  @keyframes heroFloatIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-
-<h1 class="text-center text-white mt-4" >Hello buddy </h1>
-<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias consectetur sequi dolorem! Unde doloremque hic debitis laborum repellat sed saepe facere minus explicabo earum. Nam, repellat. Aut omnis aspernatur harum.</p>
+<section class="container py-4 py-lg-5">
+  <div class="row g-4 g-lg-5 align-items-start">
+    <div class="col-12 col-lg-6">
+      <h1 class="display-4 fw-bold lh-1 mb-4">Find Your<br>Perfect Home</h1>
+      <p class="fs-5 mb-3">Discover the easiest way to rent houses, rooms, and apartments.</p>
+      <p class="fs-5 mb-3">Our automated system connects property owners with tenants seamlessly.</p>
+      <p class="fs-5 mb-4">Save time, reduce paperwork, and find your dream home today.</p>
+      <div class="d-flex flex-wrap gap-3">
+        <a class="btn btn-primary rounded-pill px-4 py-2" href="{% url 'properties' %}">
+          Browse Properties
+        </a>
+        <a class="btn btn-secondary rounded-pill px-4 py-2" href="{% url 'property' %}">
+          List Property
+        </a>
+      </div>
+    </div>
+    <div class="col-12 col-lg-6 image-hover-wrap">
+      <img
+        class="img-fluid w-100 rounded shadow-sm hero-image-animate image-hover-zoom"
+        src="https://i.pinimg.com/1200x/2e/5c/9d/2e5c9dda23ec34a05f0146522d19f976.jpg"
+        alt="Modern rental home with pool"
+      >
+    </div>
+  </div>
+</section>
 {% endblock %}
