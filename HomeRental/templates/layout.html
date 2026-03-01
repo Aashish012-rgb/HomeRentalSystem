@@ -382,7 +382,7 @@
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2 notification-dropdown">
                             <li class="notification-header">
                                 <span>Notifications</span>
-                                {% if unread_notifications_count > 0 %}
+                                {% if recent_notifications %}
                                 <form method="post" action="{% url 'mark_all_notifications_read' %}" class="notification-mark-all-form">
                                     {% csrf_token %}
                                     <button type="submit" class="notification-mark-all-btn">Mark all as read</button>

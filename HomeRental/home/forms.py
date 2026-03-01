@@ -69,12 +69,28 @@ class UserRegistrationForm(forms.Form):
 class PropertyForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field in self.fields.values():
+        for name, field in self.fields.items():
             field.widget.attrs["class"] = "form-control"
+            if name == "contact_name":
+                field.widget.attrs["placeholder"] = "Contact person"
+            if name == "contact_phone":
+                field.widget.attrs["placeholder"] = "Phone number"
+            if name == "contact_email":
+                field.widget.attrs["placeholder"] = "Email address"
 
     class Meta:
         model = Property
-        fields = ['title','description','price','location', 'property_type','image']
+        fields = [
+            'title',
+            'description',
+            'price',
+            'location',
+            'contact_name',
+            'contact_phone',
+            'contact_email',
+            'property_type',
+            'image',
+        ]
 
 
 class UserUpdateForm(forms.ModelForm):

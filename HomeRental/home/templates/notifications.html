@@ -4,7 +4,15 @@
 
 {% block content %}
 <section class="container py-4 py-lg-5">
-    <h1 class="h3 mb-4">Booking Notifications</h1>
+    <div class="d-flex align-items-center justify-content-between gap-3 mb-4">
+        <h1 class="h3 mb-0">Booking Notifications</h1>
+        {% if notifications %}
+        <form method="post" action="{% url 'mark_all_notifications_read' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-primary">Mark all as read</button>
+        </form>
+        {% endif %}
+    </div>
 
     {% for notification in notifications %}
     <div class="card mb-3">
@@ -16,13 +24,10 @@
             </a>
             <div class="d-flex align-items-center justify-content-between mt-2">
                 <small class="text-muted">{{ notification.booked_at }}</small>
-                {% if not notification.is_read %}
-                <form method="post" action="{% url 'mark_notification_read' notification.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-outline-primary">Mark as read</button>
-                </form>
-                {% else %}
+                {% if notification.is_read %}
                 <span class="badge bg-secondary">Read</span>
+                {% else %}
+                <span class="badge bg-primary">Unread</span>
                 {% endif %}
             </div>
         </div>
