@@ -1,5 +1,5 @@
 from django import forms 
-from .models import home, Property
+from .models import home, Property, Profile
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -75,3 +75,30 @@ class PropertyForm(forms.ModelForm):
     class Meta:
         model = Property
         fields = ['title','description','price','location', 'property_type','image']
+
+
+class UserUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "email", "username"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs["class"] = "form-control"
+
+
+class ProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ["phone_number", "image"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            if isinstance(field.widget, forms.ClearableFileInput):
+                field.widget.attrs["class"] = "form-control"
+            else:
+                field.widget.attrs["class"] = "form-control"
+            if name == "phone_number":
+                field.widget.attrs["placeholder"] = "Phone number"

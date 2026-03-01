@@ -105,6 +105,126 @@
             height: 23px;
         }
 
+        .notification-link {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            padding: 0 !important;
+        }
+
+        .notification-link svg {
+            width: 23px;
+            height: 23px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 6px;
+            right: 4px;
+            min-width: 16px;
+            height: 16px;
+            padding: 0 4px;
+            border-radius: 999px;
+            font-size: 0.62rem;
+            line-height: 16px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .notification-toggle.dropdown-toggle::after {
+            display: none;
+        }
+
+        .notification-dropdown {
+            width: min(90vw, 360px);
+            padding: 0.35rem 0;
+            border-radius: 12px;
+            border: 1px solid #e7e7e7;
+        }
+
+        .notification-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text);
+            padding: 0.2rem 0.9rem 0.55rem;
+        }
+
+        .notification-mark-all-form {
+            margin: 0;
+        }
+
+        .notification-mark-all-btn {
+            border: 0;
+            background: transparent;
+            color: #0d6efd;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .notification-mark-all-btn:hover {
+            text-decoration: underline;
+        }
+
+        .notification-item {
+            display: block;
+            padding: 0.65rem 0.9rem;
+            text-decoration: none;
+            color: var(--text);
+            border-left: 3px solid transparent;
+            transition: background-color 0.18s ease;
+        }
+
+        .notification-item:hover {
+            background: #f7f7f7;
+        }
+
+        .notification-item.is-unread {
+            border-left-color: #dc3545;
+            background: #fff9f9;
+        }
+
+        .notification-item-user {
+            font-size: 0.83rem;
+            font-weight: 600;
+            margin: 0 0 0.15rem;
+        }
+
+        .notification-item-meta {
+            font-size: 0.74rem;
+            color: var(--muted);
+            margin: 0;
+        }
+
+        .notification-empty {
+            padding: 0.8rem 0.9rem;
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .notification-footer-link {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-align: center;
+            padding: 0.55rem 0.8rem;
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .notification-footer-link:hover {
+            background: #f7f7f7;
+        }
+
         .icon-link:hover {
             background: #ececec;
             transform: translateY(-1px);
@@ -250,13 +370,38 @@
                     <li class="nav-item"><a class="nav-link site-nav-link" href="#">About</a></li>
                     <li class="nav-item"><a class="nav-link site-nav-link" href="#">Contact</a></li>
                     {% if request.user.is_authenticated %}
-                    <li class="nav-item">
-                        <a href="{% url 'notifications' %}" class="nav-link site-nav-link">
-                            Notifications
+                    <li class="nav-item dropdown">
+                        <button class="btn nav-link site-nav-link notification-link notification-toggle border-0 bg-transparent p-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-label="Notifications">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0m6 0H9"></path>
+                            </svg>
                             {% if unread_notifications_count > 0 %}
-                            <span class="badge bg-danger">{{ unread_notifications_count }}</span>
+                            <span class="badge bg-danger notification-badge">{{ unread_notifications_count }}</span>
                             {% endif %}
-                        </a>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2 notification-dropdown">
+                            <li class="notification-header">
+                                <span>Notifications</span>
+                                {% if unread_notifications_count > 0 %}
+                                <form method="post" action="{% url 'mark_all_notifications_read' %}" class="notification-mark-all-form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="notification-mark-all-btn">Mark all as read</button>
+                                </form>
+                                {% endif %}
+                            </li>
+                            {% for notification in recent_notifications %}
+                            <li>
+                                <a class="notification-item {% if not notification.is_read %}is-unread{% endif %}" href="{% url 'property_detail' notification.property.id %}?view=compact">
+                                    <p class="notification-item-user">{{ notification.booked_by.username }} booked {{ notification.property.title }}</p>
+                                    <p class="notification-item-meta">{{ notification.booked_at|date:"M d, Y H:i" }}</p>
+                                </a>
+                            </li>
+                            {% empty %}
+                            <li><p class="notification-empty">No notifications yet.</p></li>
+                            {% endfor %}
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li><a class="notification-footer-link" href="{% url 'notifications' %}">View all notifications</a></li>
+                        </ul>
                     </li>
                     {% endif %}
                     <li class="nav-item dropdown">
@@ -270,7 +415,11 @@
                             {% if user.is_authenticated %}
                             <li class="px-3 py-2">
                                 <div class="d-flex align-items-center gap-2">
+                                    {% if user.profile.image %}
+                                    <img src="{{ user.profile.image.url }}" alt="{{ user.username }}" class="dropdown-user-avatar">
+                                    {% else %}
                                     <span class="dropdown-user-fallback">{{ user.username|first|upper }}</span>
+                                    {% endif %}
                                     <div class="small">
                                         <div class="fw-semibold">{{ user.username }}</div>
                                         <div class="text-muted">{{ user.email }}</div>

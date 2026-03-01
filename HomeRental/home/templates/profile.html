@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<section class="container py-4 py-lg-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <article class="card shadow-sm">
+                <div class="card-body p-4 p-lg-5">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                        <h1 class="h3 mb-0">My Profile</h1>
+                        <a href="{% url 'password_change' %}" class="btn btn-outline-primary btn-sm">Change Password</a>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="row g-3">
+                            <div class="col-12 col-md-4">
+                                <label class="form-label">Profile Picture</label>
+                                <div class="mb-2">
+                                    {% if user.profile.image %}
+                                    <img src="{{ user.profile.image.url }}" alt="Profile photo" class="img-thumbnail" style="width: 120px; height: 120px; object-fit: cover;">
+                                    {% else %}
+                                    <div class="rounded-circle bg-light border d-inline-flex align-items-center justify-content-center fw-bold" style="width: 120px; height: 120px; font-size: 2rem;">
+                                        {{ user.username|first|upper }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {{ profile_form.image }}
+                            </div>
+
+                            <div class="col-12 col-md-8">
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label">First Name</label>
+                                        {{ user_form.first_name }}
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label">Last Name</label>
+                                        {{ user_form.last_name }}
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label">Username</label>
+                                        {{ user_form.username }}
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label">ID Number</label>
+                                        <input type="text" class="form-control" value="{{ user.id }}" disabled>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Email</label>
+                                        {{ user_form.email }}
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Phone Number</label>
+                                        {{ profile_form.phone_number }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <a href="{% url 'home_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+{% endblock %}

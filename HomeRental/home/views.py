@@ -1,7 +1,13 @@
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404, redirect
-from .models import home, Property, Booking
-from .forms import PropertyForm, homeForm, UserRegistrationForm
+from .models import home, Property, Booking, Profile
+from .forms import (
+    PropertyForm,
+    homeForm,
+    UserRegistrationForm,
+    UserUpdateForm,
+    ProfileUpdateForm,
+)
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 
@@ -83,7 +89,11 @@ def property_list(request):
 
 def property_detail(request, property_id):
     property_obj = get_object_or_404(Property, pk=property_id)
-    return render(request, 'property_detail.html', {'property': property_obj})
+    is_compact_view = request.GET.get('view') == 'compact'
+    return render(request, 'property_detail.html', {
+        'property': property_obj,
+        'is_compact_view': is_compact_view,
+    })
 
 
 @login_required
@@ -142,3 +152,38 @@ def mark_notification_read(request, notification_id):
         notification.save(update_fields=['is_read'])
 
     return redirect('notifications')
+
+
+@login_required
+def mark_all_notifications_read(request):
+    if request.method == 'POST':
+        Booking.objects.filter(owner=request.user, is_read=False).update(is_read=True)
+
+    return redirect(request.META.get('HTTP_REFERER', 'notifications'))
+
+
+@login_required
+def profile(request):
+    profile_obj, _ = Profile.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+        user_form = UserUpdateForm(request.POST, instance=request.user)
+        profile_form = ProfileUpdateForm(
+            request.POST, request.FILES, instance=profile_obj
+        )
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            return redirect("profile")
+    else:
+        user_form = UserUpdateForm(instance=request.user)
+        profile_form = ProfileUpdateForm(instance=profile_obj)
+
+    return render(
+        request,
+        "profile.html",
+        {
+            "user_form": user_form,
+            "profile_form": profile_form,
+        },
+    )

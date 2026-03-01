@@ -2,11 +2,27 @@
 
 {% block title %}{{ property.title }}{% endblock %}
 
+{% block extra_head %}
+{% if is_compact_view %}
+<style>
+    .property-detail-wrap {
+        max-width: 620px;
+        margin: 0 auto;
+    }
+
+    .property-detail-image {
+        max-height: 230px;
+        object-fit: cover;
+    }
+</style>
+{% endif %}
+{% endblock %}
+
 {% block content %}
 <section class="container py-4 py-lg-5">
-    <article class="card shadow-sm">
+    <article class="card shadow-sm property-detail-wrap">
         {% if property.image %}
-        <img src="{{ property.image.url }}" class="card-img-top" alt="{{ property.title }}">
+        <img src="{{ property.image.url }}" class="card-img-top property-detail-image" alt="{{ property.title }}">
         {% endif %}
         <div class="card-body">
             <h1 class="h3">{{ property.title }}</h1>

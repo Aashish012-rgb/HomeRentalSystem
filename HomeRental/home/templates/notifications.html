@@ -9,7 +9,7 @@
     {% for notification in notifications %}
     <div class="card mb-3">
         <div class="card-body">
-            <a class="text-decoration-none text-dark" href="{% url 'property_detail' notification.property.id %}">
+            <a class="text-decoration-none text-dark" href="{% url 'property_detail' notification.property.id %}?view=compact">
                 <strong>{{ notification.booked_by.username }}</strong>
                 booked your property
                 <strong>{{ notification.property.title }}</strong>
