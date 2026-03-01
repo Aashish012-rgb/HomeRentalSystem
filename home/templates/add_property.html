@@ -4,11 +4,83 @@
 {% if is_edit %}Edit Property{% else %}Create Property{% endif %}
 {% endblock %}
 
+{% block extra_head %}
+<style>
+  .property-form-bg {
+    background-image:
+      linear-gradient(rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.18)),
+      url("https://i.pinimg.com/736x/da/09/66/da0966c629589e99965675c85c564fe8.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  .property-form-card {
+    background: rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+  }
+
+  .property-form-card .card-body {
+    color: #ffffff;
+  }
+
+  .property-form-card h1 {
+    color: #ffffff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  }
+
+  .property-form-card p label {
+    color: #ffffff;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+  }
+
+  .property-form-card input:not([type="file"]),
+  .property-form-card select,
+  .property-form-card textarea {
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    color: #ffffff;
+  }
+
+  .property-form-card select {
+    background: rgba(255, 255, 255, 0.8);
+    color: #111111;
+  }
+
+  .property-form-card select option {
+    background: #ffffff;
+    color: #111111;
+  }
+
+  .property-form-card input:not([type="file"])::placeholder,
+  .property-form-card textarea::placeholder {
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .property-form-card input:focus,
+  .property-form-card select:focus,
+  .property-form-card textarea:focus {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.8);
+    color: #ffffff;
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.18);
+  }
+
+  .property-form-card select:focus {
+    background: rgba(255, 255, 255, 0.9);
+    color: #111111;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<section class="container py-4 py-lg-5">
+<section class="container py-4 py-lg-5 property-form-bg rounded-3">
   <div class="row justify-content-center">
     <div class="col-12 col-lg-8">
-      <div class="card shadow-sm">
+      <div class="card shadow-sm property-form-card">
         <div class="card-body p-4">
           <h1 class="h3 mb-4">{% if is_edit %}Edit Property{% else %}Create Property{% endif %}</h1>
     <form method="post" enctype="multipart/form-data">
