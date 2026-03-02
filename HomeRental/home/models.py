@@ -34,9 +34,49 @@ class Booking(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="owner_bookings")
     booked_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
+    is_accepted = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.booked_by.username} - {self.property.title}"
+
+
+class BookingCancellationNotification(models.Model):
+    property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    tenant = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="cancellation_notifications",
+    )
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="sent_cancellation_notifications",
+    )
+    canceled_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.owner.username} canceled booking for {self.tenant.username}"
+
+
+class BookingAcceptanceNotification(models.Model):
+    property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    tenant = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="acceptance_notifications",
+    )
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="sent_acceptance_notifications",
+    )
+    accepted_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.owner.username} accepted booking for {self.tenant.username}"
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")

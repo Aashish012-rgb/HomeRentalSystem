@@ -3,19 +3,27 @@
 {% block title %}{{ property.title }}{% endblock %}
 
 {% block extra_head %}
-{% if is_compact_view %}
 <style>
     .property-detail-wrap {
-        max-width: 560px;
+        max-width: 760px;
         margin: 0 auto;
     }
 
     .property-detail-image {
-        max-height: 200px;
+        max-height: 320px;
         object-fit: cover;
     }
+
+    {% if is_compact_view %}
+    .property-detail-wrap {
+        max-width: 560px;
+    }
+
+    .property-detail-image {
+        max-height: 200px;
+    }
+    {% endif %}
 </style>
-{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -41,10 +49,10 @@
 
             <div class="d-flex flex-wrap gap-2">
                 {% if request.user.is_authenticated and request.user != property.user %}
-                <form method="post" action="{% url 'book_property' property.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-success">Book Now</button>
-                </form>
+                    <form method="post" action="{% url 'book_property' property.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success">Book Now</button>
+                    </form>
                 {% elif not request.user.is_authenticated %}
                 <a href="{% url 'login' %}?next={% url 'property_detail' property.id %}" class="btn btn-primary">Login to Book</a>
                 {% endif %}
@@ -52,5 +60,26 @@
             </div>
         </div>
     </article>
+
+    {% if request.user.is_authenticated and request.user == property.user %}
+    <article class="card shadow-sm mt-4">
+        <div class="card-body">
+            <h2 class="h6 mb-2">Booked by tenants</h2>
+            {% if booked_tenants %}
+            <ul class="mb-0 ps-3 small">
+                {% for tenant in booked_tenants %}
+                <li>
+                    <a href="{% url 'tenant_profile' tenant.id %}" class="text-decoration-none">
+                        {{ tenant.username }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted small mb-0">No bookings yet for this property.</p>
+            {% endif %}
+        </div>
+    </article>
+    {% endif %}
 </section>
 {% endblock %}

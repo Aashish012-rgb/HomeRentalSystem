@@ -22,6 +22,18 @@ Home Rental
     background-position: center;
   }
 
+  .home-hero::before {
+    content: "";
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    top: -80px;
+    right: -70px;
+    background: radial-gradient(circle, rgba(111, 177, 255, 0.35), rgba(111, 177, 255, 0));
+    animation: blobFloat 7s ease-in-out infinite;
+  }
+
   .home-hero::after {
     content: "";
     position: absolute;
@@ -80,11 +92,118 @@ Home Rental
     transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
   }
 
+  .hero-nav-btn i {
+    transition: transform 0.2s ease;
+  }
+
   .hero-nav-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.26);
     background: #ffffff;
     color: #0f1c24;
+  }
+
+  .hero-nav-btn:hover i {
+    transform: translateX(4px);
+  }
+
+  .home-services {
+    padding-top: 1.2rem;
+    padding-bottom: 0.2rem;
+  }
+
+  .service-card {
+    position: relative;
+    height: 100%;
+    border-radius: 1.35rem;
+    background: #f7f8fa;
+    border: 1px solid #d9dee5;
+    box-shadow: 0 8px 24px rgba(14, 22, 34, 0.08);
+    overflow: hidden;
+    transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+  }
+
+  .service-card::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(130deg, rgba(30, 99, 239, 0.13), rgba(45, 186, 136, 0.08), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+
+  .service-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 34px rgba(14, 22, 34, 0.14);
+    border-color: #c9d5ea;
+  }
+
+  .service-card:hover::before {
+    opacity: 1;
+  }
+
+  .service-art {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 1rem;
+    font-size: 2.2rem;
+    background: linear-gradient(145deg, #edf2ff, #fff8eb);
+    color: #1f4fd3;
+  }
+
+  .service-art i {
+    font-size: 2.25rem;
+    transition: transform 0.3s ease;
+  }
+
+  .service-card:hover .service-art i {
+    transform: scale(1.12) rotate(-8deg);
+  }
+
+  .service-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.9rem;
+  }
+
+  .service-copy {
+    font-size: 1.26rem;
+    color: #273446;
+    line-height: 1.55;
+    min-height: 120px;
+  }
+
+  .service-btn {
+    border-radius: 0.9rem;
+    font-weight: 700;
+    padding: 0.6rem 1.2rem;
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-delay-1 {
+    transition-delay: 0.08s;
+  }
+
+  .reveal-delay-2 {
+    transition-delay: 0.16s;
+  }
+
+  .reveal-delay-3 {
+    transition-delay: 0.24s;
   }
 
   @keyframes heroRise {
@@ -97,6 +216,29 @@ Home Rental
       transform: translateY(0);
     }
   }
+
+  @keyframes blobFloat {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(14px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-hero::before,
+    .home-hero-content,
+    .reveal,
+    .service-card,
+    .hero-nav-btn i,
+    .service-art i {
+      animation: none !important;
+      transition: none !important;
+      transform: none !important;
+    }
+  }
 </style>
 {% endblock %}
 
@@ -104,17 +246,84 @@ Home Rental
 <section class="container py-4 py-lg-5">
   <div class="home-hero shadow-sm">
     <div class="home-hero-content">
-      <p class="hero-tagline">Sajilo Ghar Rental Platform</p>
-      <h1 class="hero-title">Trusted spaces for living, renting, and growing</h1>
-      <p class="hero-subtext">
+      <p class="hero-tagline reveal is-visible">Sajilo Ghar Rental Platform</p>
+      <h1 class="hero-title reveal is-visible reveal-delay-1">Trusted spaces for living, renting, and growing</h1>
+      <p class="hero-subtext reveal is-visible reveal-delay-2">
         Browse homes, rooms, and apartments with clear details and direct owner contact.
         Post your property in minutes and connect with verified tenants.
       </p>
-      <a class="hero-nav-btn" href="{% url 'properties' %}">
+      <a class="hero-nav-btn reveal is-visible reveal-delay-3" href="{% url 'properties' %}">
         Dream Spaces
+        <i class="fa-solid fa-arrow-right"></i>
       </a>
 
     </div>
   </div>
 </section>
+
+<section class="container home-services">
+  <div class="text-center mb-4 mb-lg-5 reveal">
+    <h2 class="fw-bold mb-2">How We Help You</h2>
+    <p class="text-muted mb-0">Everything you need to buy, rent, or list a property in one place.</p>
+  </div>
+  <div class="row g-4">
+    <div class="col-12 col-lg-4">
+      <article class="service-card p-4 p-lg-5 text-center reveal reveal-delay-1">
+        <div class="service-art"><i class="fa-solid fa-house"></i></div>
+        <h2 class="service-title">Buy a Home</h2>
+        <p class="service-copy">
+          Compare neighborhood options, understand real costs, and move forward with confidence.
+        </p>
+        <a class="btn btn-outline-primary service-btn" href="{% url 'properties' %}">Explore Listings</a>
+      </article>
+    </div>
+    <div class="col-12 col-lg-4">
+      <article class="service-card p-4 p-lg-5 text-center reveal reveal-delay-2">
+        <div class="service-art"><i class="fa-solid fa-key"></i></div>
+        <h2 class="service-title">Rent a Home</h2>
+        <p class="service-copy">
+          Discover verified rental spaces and connect with owners through a smooth digital flow.
+        </p>
+        <a class="btn btn-outline-primary service-btn" href="{% url 'properties' %}">Find Rentals</a>
+      </article>
+    </div>
+    <div class="col-12 col-lg-4">
+      <article class="service-card p-4 p-lg-5 text-center reveal reveal-delay-3">
+        <div class="service-art"><i class="fa-solid fa-sign-hanging"></i></div>
+        <h2 class="service-title">List a Home</h2>
+        <p class="service-copy">
+          Post your property quickly, highlight key details, and receive booking interest faster.
+        </p>
+        <a class="btn btn-outline-primary service-btn" href="{% url 'property' %}">See Your Options</a>
+      </article>
+    </div>
+  </div>
+</section>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const revealItems = document.querySelectorAll(".reveal:not(.is-visible)");
+    if (!("IntersectionObserver" in window) || revealItems.length === 0) {
+      revealItems.forEach(function (el) {
+        el.classList.add("is-visible");
+      });
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    revealItems.forEach(function (el) {
+      observer.observe(el);
+    });
+  });
+</script>
 {% endblock %}

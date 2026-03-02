@@ -1,6 +1,13 @@
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404, redirect
-from .models import home, Property, Booking, Profile
+from .models import (
+    home,
+    Property,
+    Booking,
+    Profile,
+    BookingCancellationNotification,
+    BookingAcceptanceNotification,
+)
 from .forms import (
     PropertyForm,
     homeForm,
@@ -9,7 +16,10 @@ from .forms import (
     ProfileUpdateForm,
 )
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login
+from django.contrib.auth import login, get_user_model
+from django.http import HttpResponseForbidden
+
+User = get_user_model()
 
 def index(request):
     return render(request, 'index.html')
@@ -104,9 +114,29 @@ def property_list(request):
 def property_detail(request, property_id):
     property_obj = get_object_or_404(Property, pk=property_id)
     is_compact_view = request.GET.get('view') == 'compact'
+    booked_tenants = []
+
+    if request.user.is_authenticated and request.user == property_obj.user:
+        property_bookings = Booking.objects.filter(
+            property=property_obj,
+            owner=request.user,
+        ).select_related('booked_by').order_by('-booked_at')
+
+        seen_user_ids = set()
+        for booking in property_bookings:
+            if booking.booked_by_id not in seen_user_ids:
+                seen_user_ids.add(booking.booked_by_id)
+                booked_tenants.append(
+                    {
+                        "id": booking.booked_by_id,
+                        "username": booking.booked_by.username,
+                    }
+                )
+
     return render(request, 'property_detail.html', {
         'property': property_obj,
         'is_compact_view': is_compact_view,
+        'booked_tenants': booked_tenants,
     })
 
 
@@ -138,21 +168,153 @@ def property_delete(request, property_id):
 def book_property(request, property_id):
     property = get_object_or_404(Property, id=property_id)
 
-    if request.user != property.user:
-        Booking.objects.create(
+    if request.method == "POST" and request.user != property.user:
+        Booking.objects.get_or_create(
             property=property,
             booked_by=request.user,
-            owner=property.user
+            owner=property.user,
         )
 
     return redirect('properties')
 
 @login_required
 def notifications(request):
-    notifications = request.user.owner_bookings.all().order_by('-booked_at')
+    owner_notifications_qs = request.user.owner_bookings.select_related(
+        "booked_by", "property"
+    )
+    tenant_notifications_qs = request.user.cancellation_notifications.select_related(
+        "owner", "property"
+    )
+    tenant_acceptance_qs = request.user.acceptance_notifications.select_related(
+        "owner", "property"
+    )
+
+    if request.method == "GET":
+        owner_notifications_qs.filter(is_read=False).update(is_read=True)
+        tenant_notifications_qs.filter(is_read=False).update(is_read=True)
+        tenant_acceptance_qs.filter(is_read=False).update(is_read=True)
+
+    notifications = []
+    for item in owner_notifications_qs:
+        notifications.append(
+            {
+                "message": f"{item.booked_by.username} booked your property {item.property.title}",
+                "created_at": item.booked_at,
+                "is_read": item.is_read,
+                "can_cancel": item.is_read,
+                "can_accept": item.is_read and not item.is_accepted,
+                "is_accepted": item.is_accepted,
+                "booking_id": item.id,
+            }
+        )
+
+    for item in tenant_notifications_qs:
+        notifications.append(
+            {
+                "message": f"{item.owner.username} canceled your booking for {item.property.title}",
+                "created_at": item.canceled_at,
+                "is_read": item.is_read,
+                "can_cancel": False,
+                "can_accept": False,
+                "is_accepted": False,
+                "booking_id": None,
+            }
+        )
+
+    for item in tenant_acceptance_qs:
+        notifications.append(
+            {
+                "message": f"{item.owner.username} accepted your booking for {item.property.title}",
+                "created_at": item.accepted_at,
+                "is_read": item.is_read,
+                "can_cancel": False,
+                "can_accept": False,
+                "is_accepted": False,
+                "booking_id": None,
+            }
+        )
+
+    notifications.sort(key=lambda n: n["created_at"], reverse=True)
+
     return render(request, 'notifications.html', {
         'notifications': notifications
     })
+
+
+@login_required
+def cancel_booking(request, booking_id):
+    if request.method != "POST":
+        return redirect(request.META.get('HTTP_REFERER', 'properties'))
+
+    booking = Booking.objects.filter(
+        pk=booking_id,
+        owner=request.user,
+        is_read=True,
+    ).first()
+
+    if not booking:
+        return redirect(request.META.get('HTTP_REFERER', 'properties'))
+
+    BookingCancellationNotification.objects.create(
+        property=booking.property,
+        tenant=booking.booked_by,
+        owner=booking.owner,
+    )
+    booking.delete()
+    return redirect(request.META.get('HTTP_REFERER', 'properties'))
+
+
+@login_required
+def accept_booking(request, booking_id):
+    if request.method != "POST":
+        return redirect(request.META.get('HTTP_REFERER', 'notifications'))
+
+    booking = Booking.objects.filter(
+        pk=booking_id,
+        owner=request.user,
+        is_read=True,
+    ).first()
+
+    if not booking or booking.is_accepted:
+        return redirect(request.META.get('HTTP_REFERER', 'notifications'))
+
+    BookingAcceptanceNotification.objects.create(
+        property=booking.property,
+        tenant=booking.booked_by,
+        owner=booking.owner,
+    )
+    booking.is_accepted = True
+    booking.save(update_fields=["is_accepted"])
+    return redirect(request.META.get('HTTP_REFERER', 'notifications'))
+
+
+@login_required
+def tenant_profile(request, user_id):
+    tenant = get_object_or_404(User, pk=user_id)
+
+    can_view = Booking.objects.filter(
+        owner=request.user,
+        booked_by=tenant,
+    ).exists()
+
+    if not can_view:
+        return HttpResponseForbidden("You are not allowed to view this profile.")
+
+    tenant_profile_obj = Profile.objects.filter(user=tenant).first()
+    tenant_bookings = Booking.objects.filter(
+        owner=request.user,
+        booked_by=tenant,
+    ).select_related('property').order_by('-booked_at')
+
+    return render(
+        request,
+        'tenant_profile.html',
+        {
+            'tenant': tenant,
+            'tenant_profile': tenant_profile_obj,
+            'tenant_bookings': tenant_bookings,
+        },
+    )
 
 
 @login_required
@@ -172,6 +334,14 @@ def mark_notification_read(request, notification_id):
 def mark_all_notifications_read(request):
     if request.method == 'POST':
         Booking.objects.filter(owner=request.user, is_read=False).update(is_read=True)
+        BookingCancellationNotification.objects.filter(
+            tenant=request.user,
+            is_read=False,
+        ).update(is_read=True)
+        BookingAcceptanceNotification.objects.filter(
+            tenant=request.user,
+            is_read=False,
+        ).update(is_read=True)
 
     return redirect(request.META.get('HTTP_REFERER', 'notifications'))
 
