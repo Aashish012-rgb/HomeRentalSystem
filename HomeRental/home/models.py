@@ -1,19 +1,17 @@
 from django.db import models
-from django.contrib.auth.models import User 
-# Create your models here.
+from django.contrib.auth.models import User
 
 class home(models.Model):
-    user= models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField(max_length=200)
     photo = models.ImageField(upload_to='photos/', blank=True, null=True)
-    created_at =models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
 class Property(models.Model):
-    PROPERTY_TYPE =(
-        ('rent','Rent'),
-        ('sell','Sell')
-
+    PROPERTY_TYPE = (
+        ('rent', 'Rent'),
+        ('sell', 'Sell'),
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
@@ -24,9 +22,11 @@ class Property(models.Model):
     contact_phone = models.CharField(max_length=30, blank=True, default="")
     contact_email = models.EmailField(blank=True, default="")
     property_type = models.CharField(max_length=10, choices=PROPERTY_TYPE)
-    image= models.ImageField(upload_to='property_images/')
-    created_at= models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to='property_images/')
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.title
 
 class Booking(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE)
@@ -35,11 +35,8 @@ class Booking(models.Model):
     booked_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
 
-   
-
     def __str__(self):
-        return f'{self.user.username}- {self.title}'
-
+        return f"{self.booked_by.username} - {self.property.title}"
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")

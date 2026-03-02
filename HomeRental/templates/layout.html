@@ -49,11 +49,16 @@
         .site-navbar {
             background: var(--white);
             border-bottom: 1px solid var(--line);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
         }
 
         .site-brand {
             font-weight: 700;
-            font-size: 2rem;
+            font-size: 1.35rem;
             color: var(--text) !important;
         }
 
@@ -66,8 +71,8 @@
         .site-navbar .container-fluid {
             max-width: 1260px;
             margin: 0 auto;
-            padding-top: 1rem;
-            padding-bottom: 1rem;
+            padding-top: 0.45rem;
+            padding-bottom: 0.45rem;
         }
 
         .site-navbar .navbar-nav {
@@ -75,10 +80,15 @@
             gap: 0.85rem;
         }
 
+        .site-main-nav {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
         .site-nav-link {
             color: var(--muted) !important;
-            font-size: 2rem;
-            padding: 0.4rem 0.75rem !important;
+            font-size: 1rem;
+            padding: 0.3rem 0.6rem !important;
             border-radius: 10px;
             transition: background-color 0.2s ease, color 0.2s ease;
         }
@@ -331,11 +341,16 @@
 
         @media (max-width: 900px) {
             .site-brand {
-                font-size: 1.6rem;
+                font-size: 1.2rem;
             }
 
             .site-nav-link {
-                font-size: 1.2rem;
+                font-size: 0.95rem;
+            }
+
+            .site-main-nav {
+                margin-left: 0;
+                margin-right: 0;
             }
 
             .footer-grid {
@@ -364,11 +379,13 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="mainNavbar">
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <ul class="navbar-nav site-main-nav mb-2 mb-lg-0">
                     <li class="nav-item"><a class="nav-link site-nav-link" href="{% url 'home_list' %}">Home</a></li>
                     <li class="nav-item"><a class="nav-link site-nav-link" href="{% url 'properties' %}">Properties</a></li>
                     <li class="nav-item"><a class="nav-link site-nav-link" href="#">About</a></li>
                     <li class="nav-item"><a class="nav-link site-nav-link" href="#">Contact</a></li>
+                </ul>
+                <ul class="navbar-nav ms-lg-auto mb-2 mb-lg-0">
                     {% if request.user.is_authenticated %}
                     <li class="nav-item dropdown">
                         <button class="btn nav-link site-nav-link notification-link notification-toggle border-0 bg-transparent p-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-label="Notifications">
@@ -445,6 +462,8 @@
             </div>
         </div>
     </nav>
+
+    <div style="height: 74px;"></div>
 
     {% block hero %}{% endblock %}
 

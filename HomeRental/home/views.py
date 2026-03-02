@@ -85,6 +85,20 @@ def add_property(request):
 
 def property_list(request):
     properties = Property.objects.all()
+    sort_option = request.GET.get('sort')
+
+    properties = Property.objects.all()
+
+    if sort_option == 'low_to_high':
+        properties = properties.order_by('price')
+    elif sort_option == 'high_to_low':
+        properties = properties.order_by('-price')
+
+    context = {
+        'properties': properties
+    }
+
+    # return render(request, 'home/property_list.html', context)
     return render(request, 'property_list.html',{'properties':properties})
 
 def property_detail(request, property_id):

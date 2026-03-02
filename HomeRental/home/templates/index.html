@@ -8,18 +8,93 @@ Home Rental
 
 {% block extra_head %}
 <style>
-  .hero-image-animate {
-    animation: heroFloatIn 1s ease-out both;
+  .home-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;
+    min-height: clamp(460px, 70vh, 680px);
+    display: flex;
+    align-items: center;
+    background-image:
+      linear-gradient(120deg, rgba(18, 31, 40, 0.82), rgba(18, 31, 40, 0.5)),
+      url("https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80");
+    background-size: cover;
+    background-position: center;
   }
 
-  @keyframes heroFloatIn {
+  .home-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 82% 18%, rgba(141, 193, 170, 0.25), transparent 45%),
+      radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.08), transparent 40%);
+    pointer-events: none;
+  }
+
+  .home-hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 780px;
+    padding: clamp(2rem, 5vw, 4rem);
+    color: #ffffff;
+    animation: heroRise 0.8s ease-out both;
+  }
+
+  .hero-tagline {
+    font-size: 0.82rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    opacity: 0.92;
+  }
+
+  .hero-title {
+    font-size: clamp(2rem, 5vw, 4.3rem);
+    line-height: 1.03;
+    font-weight: 800;
+    margin-bottom: 1.25rem;
+    text-wrap: balance;
+  }
+
+  .hero-subtext {
+    font-size: clamp(1rem, 1.8vw, 1.2rem);
+    color: rgba(255, 255, 255, 0.9);
+    max-width: 62ch;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.72rem 1.2rem;
+    border-radius: 999px;
+    font-weight: 700;
+    text-decoration: none;
+    color: #0f1c24;
+    background: #f4f7f8;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  .hero-nav-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.26);
+    background: #ffffff;
+    color: #0f1c24;
+  }
+
+  @keyframes heroRise {
     from {
       opacity: 0;
-      transform: translateY(20px) scale(0.98);
+      transform: translateY(16px);
     }
     to {
       opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: translateY(0);
     }
   }
 </style>
@@ -27,27 +102,18 @@ Home Rental
 
 {% block content %}
 <section class="container py-4 py-lg-5">
-  <div class="row g-4 g-lg-5 align-items-start">
-    <div class="col-12 col-lg-6">
-      <h1 class="display-4 fw-bold lh-1 mb-4">Find Your<br>Perfect Home</h1>
-      <p class="fs-5 mb-3">Discover the easiest way to rent houses, rooms, and apartments.</p>
-      <p class="fs-5 mb-3">Our automated system connects property owners with tenants seamlessly.</p>
-      <p class="fs-5 mb-4">Save time, reduce paperwork, and find your dream home today.</p>
-      <div class="d-flex flex-wrap gap-3">
-        <a class="btn btn-primary rounded-pill px-4 py-2" href="{% url 'properties' %}">
-          Browse Properties
-        </a>
-        <a class="btn btn-secondary rounded-pill px-4 py-2" href="{% url 'property' %}">
-          List Property
-        </a>
-      </div>
-    </div>
-    <div class="col-12 col-lg-6 image-hover-wrap">
-      <img
-        class="img-fluid w-100 rounded shadow-sm hero-image-animate image-hover-zoom"
-        src="https://i.pinimg.com/1200x/2e/5c/9d/2e5c9dda23ec34a05f0146522d19f976.jpg"
-        alt="Modern rental home with pool"
-      >
+  <div class="home-hero shadow-sm">
+    <div class="home-hero-content">
+      <p class="hero-tagline">Sajilo Ghar Rental Platform</p>
+      <h1 class="hero-title">Trusted spaces for living, renting, and growing</h1>
+      <p class="hero-subtext">
+        Browse homes, rooms, and apartments with clear details and direct owner contact.
+        Post your property in minutes and connect with verified tenants.
+      </p>
+      <a class="hero-nav-btn" href="{% url 'properties' %}">
+        Dream Spaces
+      </a>
+
     </div>
   </div>
 </section>
