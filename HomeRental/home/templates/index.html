@@ -112,15 +112,40 @@ Home Rental
     padding-bottom: 0.2rem;
   }
 
+  .home-services-stage {
+    position: relative;
+  }
+
   .service-card {
     position: relative;
     height: 100%;
     border-radius: 1.35rem;
-    background: #f7f8fa;
-    border: 1px solid #d9dee5;
+    background: rgba(247, 248, 250, 0.62);
+    border: 1px solid rgba(217, 222, 229, 0.72);
+    backdrop-filter: blur(3px);
+    z-index: 3;
     box-shadow: 0 8px 24px rgba(14, 22, 34, 0.08);
     overflow: hidden;
     transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+  }
+
+  .service-section-banner {
+    border-radius: 1rem;
+    width: 100%;
+    height: clamp(420px, 56vw, 620px);
+    object-fit: cover;
+    display: block;
+    box-shadow: 0 8px 22px rgba(16, 28, 44, 0.12);
+  }
+
+  .service-overlay-grid {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 1.5rem;
+    z-index: 2;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 
   .service-card::before {
@@ -143,27 +168,6 @@ Home Rental
     opacity: 1;
   }
 
-  .service-art {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    margin: 0 auto 1rem;
-    font-size: 2.2rem;
-    background: linear-gradient(145deg, #edf2ff, #fff8eb);
-    color: #1f4fd3;
-  }
-
-  .service-art i {
-    font-size: 2.25rem;
-    transition: transform 0.3s ease;
-  }
-
-  .service-card:hover .service-art i {
-    transform: scale(1.12) rotate(-8deg);
-  }
-
   .service-title {
     font-size: 2rem;
     font-weight: 800;
@@ -181,6 +185,19 @@ Home Rental
     border-radius: 0.9rem;
     font-weight: 700;
     padding: 0.6rem 1.2rem;
+  }
+
+  @media (max-width: 991.98px) {
+    .service-overlay-grid {
+      position: static;
+      margin-top: 1rem;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .service-card {
+      background: rgba(247, 248, 250, 0.82);
+    }
   }
 
   .why-choose {
@@ -205,15 +222,20 @@ Home Rental
   }
 
   .why-icon {
-    width: 54px;
-    height: 54px;
-    border-radius: 0.85rem;
-    display: grid;
-    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 0.95rem;
+    overflow: hidden;
     margin-bottom: 0.85rem;
-    background: linear-gradient(140deg, #ecf2ff, #f2fbf7);
-    color: #1c4fcc;
-    font-size: 1.2rem;
+    background: #e9eff7;
+    border: 1px solid #d6e0ee;
+  }
+
+  .why-icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   .why-title {
@@ -345,8 +367,7 @@ Home Rental
     .home-hero-content,
     .reveal,
     .service-card,
-    .hero-nav-btn i,
-    .service-art i {
+    .hero-nav-btn i {
       animation: none !important;
       transition: none !important;
       transform: none !important;
@@ -379,36 +400,44 @@ Home Rental
     <h2 class="fw-bold mb-2">How We Help You</h2>
     <p class="text-muted mb-0">Everything you need to buy, rent, or list a property in one place.</p>
   </div>
-  <div class="row g-4">
-    <div class="col-12 col-lg-4">
-      <article class="service-card p-4 p-lg-5 text-center reveal reveal-delay-1">
-        <div class="service-art"><i class="fa-solid fa-house"></i></div>
-        <h2 class="service-title">Buy a Home</h2>
-        <p class="service-copy">
-          Compare neighborhood options, understand real costs, and move forward with confidence.
-        </p>
-        <a class="btn btn-outline-primary service-btn" href="{% url 'properties' %}">Explore Listings</a>
-      </article>
-    </div>
-    <div class="col-12 col-lg-4">
-      <article class="service-card p-4 p-lg-5 text-center reveal reveal-delay-2">
-        <div class="service-art"><i class="fa-solid fa-key"></i></div>
-        <h2 class="service-title">Rent a Home</h2>
-        <p class="service-copy">
-          Discover verified rental spaces and connect with owners through a smooth digital flow.
-        </p>
-        <a class="btn btn-outline-primary service-btn" href="{% url 'properties' %}">Find Rentals</a>
-      </article>
-    </div>
-    <div class="col-12 col-lg-4">
-      <article class="service-card p-4 p-lg-5 text-center reveal reveal-delay-3">
-        <div class="service-art"><i class="fa-solid fa-sign-hanging"></i></div>
-        <h2 class="service-title">List a Home</h2>
-        <p class="service-copy">
-          Post your property quickly, highlight key details, and receive booking interest faster.
-        </p>
-        <a class="btn btn-outline-primary service-btn" href="{% url 'property' %}">See Your Options</a>
-      </article>
+  <div class="home-services-stage mb-4 mb-lg-5 reveal">
+    <img
+      class="service-section-banner"
+      src="https://kajabi-storefronts-production.kajabi-cdn.com/kajabi-storefronts-production/file-uploads/blogs/6976/images/0e6a64-b732-f51-c866-32d17c43b_5_Short_Term_Rental_Design_Tips_from_Top-Rated_Airbnb_Hosts.jpg"
+      alt="How we help you in rent"
+      loading="lazy"
+      referrerpolicy="no-referrer"
+    >
+    <div class="service-overlay-grid">
+      <div class="row g-4">
+        <div class="col-12 col-lg-4">
+          <article class="service-card p-4 p-lg-5 text-center reveal reveal-delay-1">
+            <h2 class="service-title">Buy a Home</h2>
+            <p class="service-copy">
+              Compare neighborhood options, understand real costs, and move forward with confidence.
+            </p>
+            <a class="btn btn-outline-primary service-btn" href="{% url 'properties' %}">Explore Listings</a>
+          </article>
+        </div>
+        <div class="col-12 col-lg-4">
+          <article class="service-card p-4 p-lg-5 text-center reveal reveal-delay-2">
+            <h2 class="service-title">Rent a Home</h2>
+            <p class="service-copy">
+              Discover verified rental spaces and connect with owners through a smooth digital flow.
+            </p>
+            <a class="btn btn-outline-primary service-btn" href="{% url 'properties' %}">Find Rentals</a>
+          </article>
+        </div>
+        <div class="col-12 col-lg-4">
+          <article class="service-card p-4 p-lg-5 text-center reveal reveal-delay-3">
+            <h2 class="service-title">List a Home</h2>
+            <p class="service-copy">
+              Post your property quickly, highlight key details, and receive booking interest faster.
+            </p>
+            <a class="btn btn-outline-primary service-btn" href="{% url 'property' %}">See Your Options</a>
+          </article>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -421,28 +450,36 @@ Home Rental
   <div class="row g-3 g-lg-4">
     <div class="col-12 col-sm-6 col-lg-3">
       <article class="why-card reveal reveal-delay-1">
-        <div class="why-icon"><i class="fa-solid fa-badge-check"></i></div>
+        <div class="why-icon">
+          <img class="why-icon-img" src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=120&q=80" alt="Verified listings">
+        </div>
         <h3 class="why-title">Verified Listings</h3>
         <p class="why-copy">Review trusted property details with better listing quality and fewer surprises.</p>
       </article>
     </div>
     <div class="col-12 col-sm-6 col-lg-3">
       <article class="why-card reveal reveal-delay-2">
-        <div class="why-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="why-icon">
+          <img class="why-icon-img" src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=120&q=80" alt="Secure communication">
+        </div>
         <h3 class="why-title">Secure Communication</h3>
         <p class="why-copy">Connect through a platform designed for safer interactions between owners and tenants.</p>
       </article>
     </div>
     <div class="col-12 col-sm-6 col-lg-3">
       <article class="why-card reveal reveal-delay-3">
-        <div class="why-icon"><i class="fa-solid fa-user-tie"></i></div>
+        <div class="why-icon">
+          <img class="why-icon-img" src="https://images.unsplash.com/photo-1521790797524-b2497295b8a0?auto=format&fit=crop&w=120&q=80" alt="Direct owner contact">
+        </div>
         <h3 class="why-title">Direct Owner Contact</h3>
         <p class="why-copy">Speak directly with property owners to clarify details and decide with confidence.</p>
       </article>
     </div>
     <div class="col-12 col-sm-6 col-lg-3">
       <article class="why-card reveal">
-        <div class="why-icon"><i class="fa-solid fa-bolt"></i></div>
+        <div class="why-icon">
+          <img class="why-icon-img" src="https://images.unsplash.com/photo-1556155092-490a1ba16284?auto=format&fit=crop&w=120&q=80" alt="Fast booking">
+        </div>
         <h3 class="why-title">Fast Booking</h3>
         <p class="why-copy">Move from search to booking quickly with a straightforward and efficient flow.</p>
       </article>
@@ -452,12 +489,12 @@ Home Rental
 
 <section class="container testimonials">
   <div class="text-center mb-4 mb-lg-5 reveal">
-    <h2 class="fw-bold mb-2">Testimonials</h2>
+    <h2 class="fw-bold mb-2">Ratings & Reviews</h2>
     <p class="text-muted mb-0">What renters and owners say about using our platform.</p>
   </div>
   <div class="testimonial-form-wrap reveal mb-4 mb-lg-5">
     {% if request.user.is_authenticated %}
-      <h3 class="h5 mb-3">Add Your Testimonial</h3>
+      <h3 class="h5 mb-3">Add Your Review</h3>
       <form method="post" action="{% url 'home_list' %}">
         {% csrf_token %}
         <div class="row g-3">
@@ -483,7 +520,7 @@ Home Rental
             {% endif %}
           </div>
           <div class="col-12">
-            <button type="submit" class="btn btn-primary">Submit Testimonial</button>
+            <button type="submit" class="btn btn-primary">Submit Review</button>
           </div>
         </div>
       </form>
@@ -546,4 +583,3 @@ Home Rental
   });
 </script>
 {% endblock %}
-

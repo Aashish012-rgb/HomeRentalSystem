@@ -25,6 +25,28 @@ Properties
   .property-grid-card .card-body {
     padding: 0.9rem;
   }
+
+  .property-filter-form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: nowrap;
+  }
+
+  .property-filter-select {
+    min-width: 180px;
+  }
+
+  @media (max-width: 575.98px) {
+    .property-filter-form {
+      flex-wrap: wrap;
+    }
+
+    .property-filter-select {
+      min-width: 0;
+      width: 100%;
+    }
+  }
 </style>
 {% endblock %}
 
@@ -33,13 +55,21 @@ Properties
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <h1 class="h2 mb-0">Properties</h1>
     <div class="d-flex align-items-center gap-2 flex-wrap">
-      <form method="GET" class="mb-0">
-        <select name="sort" onchange="this.form.submit()" class="form-select">
+      <form method="GET" class="mb-0 property-filter-form">
+        <select name="location" onchange="this.form.submit()" class="form-select property-filter-select">
+          <option value="">All Locations</option>
+          {% for location in locations %}
+          <option value="{{ location }}" {% if selected_location == location %}selected{% endif %}>
+            {{ location }}
+          </option>
+          {% endfor %}
+        </select>
+        <select name="sort" onchange="this.form.submit()" class="form-select property-filter-select">
           <option value="">Price</option>
-          <option value="low_to_high" {% if request.GET.sort == "low_to_high" %}selected{% endif %}>
+          <option value="low_to_high" {% if sort_option == "low_to_high" %}selected{% endif %}>
              Low to High
           </option>
-          <option value="high_to_low" {% if request.GET.sort == "high_to_low" %}selected{% endif %}>
+          <option value="high_to_low" {% if sort_option == "high_to_low" %}selected{% endif %}>
              High to Low
           </option>
         </select>

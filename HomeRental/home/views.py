@@ -116,22 +116,35 @@ def add_property(request):
 
 
 def property_list(request):
-    properties = Property.objects.all()
-    sort_option = request.GET.get('sort')
+    sort_option = request.GET.get("sort", "")
+    selected_location = request.GET.get("location", "")
 
     properties = Property.objects.all()
 
-    if sort_option == 'low_to_high':
-        properties = properties.order_by('price')
-    elif sort_option == 'high_to_low':
-        properties = properties.order_by('-price')
+    if selected_location:
+        properties = properties.filter(location__iexact=selected_location)
+
+    if sort_option == "low_to_high":
+        properties = properties.order_by("price")
+    elif sort_option == "high_to_low":
+        properties = properties.order_by("-price")
+
+    locations = (
+        Property.objects.exclude(location__isnull=True)
+        .exclude(location__exact="")
+        .order_by("location")
+        .values_list("location", flat=True)
+        .distinct()
+    )
 
     context = {
-        'properties': properties
+        "properties": properties,
+        "locations": locations,
+        "selected_location": selected_location,
+        "sort_option": sort_option,
     }
 
-    # return render(request, 'home/property_list.html', context)
-    return render(request, 'property_list.html',{'properties':properties})
+    return render(request, "property_list.html", context)
 
 def property_detail(request, property_id):
     property_obj = get_object_or_404(Property, pk=property_id)
