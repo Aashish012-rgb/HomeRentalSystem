@@ -17,18 +17,33 @@
     {% for notification in notifications %}
     <div class="card mb-3">
         <div class="card-body">
-            <a class="text-decoration-none text-dark" href="{% url 'property_detail' notification.property.id %}?view=compact">
-                <strong>{{ notification.booked_by.username }}</strong>
-                booked your property
-                <strong>{{ notification.property.title }}</strong>
-            </a>
-            <div class="d-flex align-items-center justify-content-between mt-2">
-                <small class="text-muted">{{ notification.booked_at }}</small>
-                {% if notification.is_read %}
-                <span class="badge bg-secondary">Read</span>
-                {% else %}
-                <span class="badge bg-primary">Unread</span>
-                {% endif %}
+            <p class="mb-1">
+                {{ notification.message }}
+            </p>
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2">
+                <small class="text-muted">{{ notification.created_at|date:"M d, Y H:i" }}</small>
+                <div class="d-flex align-items-center gap-2">
+                    {% if notification.is_read %}
+                    <span class="badge bg-secondary">Read</span>
+                    {% else %}
+                    <span class="badge bg-primary">Unread</span>
+                    {% endif %}
+                    {% if notification.is_accepted %}
+                    <span class="badge bg-success">Accepted</span>
+                    {% endif %}
+                    {% if notification.can_accept and notification.booking_id %}
+                    <form method="post" action="{% url 'accept_booking' notification.booking_id %}" class="m-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-success">Accept</button>
+                    </form>
+                    {% endif %}
+                    {% if notification.can_cancel and notification.booking_id %}
+                    <form method="post" action="{% url 'cancel_booking' notification.booking_id %}" class="m-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Cancel Booking</button>
+                    </form>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>

@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block title %}Tenant Profile{% endblock %}
+
+{% block content %}
+<section class="container py-4 py-lg-5">
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    {% if tenant_profile and tenant_profile.image %}
+                    <img src="{{ tenant_profile.image.url }}" alt="{{ tenant.username }}" class="rounded-circle" style="width: 72px; height: 72px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center fw-bold" style="width: 72px; height: 72px;">
+                        {{ tenant.username|first|upper }}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <h1 class="h4 mb-1">{{ tenant.username }}</h1>
+                        <p class="mb-1 text-muted">{{ tenant.email|default:"No email provided" }}</p>
+                        <p class="mb-0 text-muted">
+                            {% if tenant_profile and tenant_profile.phone_number %}
+                            {{ tenant_profile.phone_number }}
+                            {% else %}
+                            No phone provided
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <a href="{% url 'notifications' %}" class="btn btn-outline-secondary btn-sm">Back to Notifications</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Booked Properties</h2>
+            {% if tenant_bookings %}
+            <div class="list-group list-group-flush">
+                {% for booking in tenant_bookings %}
+                <div class="list-group-item px-0">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <div>
+                            <p class="mb-1 fw-semibold">{{ booking.property.title }}</p>
+                            <p class="mb-0 small text-muted">{{ booking.property.location }}</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="small text-muted">{{ booking.booked_at|date:"M d, Y H:i" }}</span>
+                            <a href="{% url 'property_detail' booking.property.id %}" class="btn btn-sm btn-outline-primary">View Property</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">No bookings found for this tenant.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

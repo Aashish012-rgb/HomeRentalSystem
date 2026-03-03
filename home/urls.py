@@ -15,9 +15,12 @@ urlpatterns = [
     path('properties/<int:property_id>/edit/', views.property_edit, name='property_edit'),
     path('properties/<int:property_id>/delete/', views.property_delete, name='property_delete'),
     path('book/<int:property_id>/', views.book_property, name='book_property'),
+    path('bookings/<int:booking_id>/cancel/', views.cancel_booking, name='cancel_booking'),
+    path('bookings/<int:booking_id>/accept/', views.accept_booking, name='accept_booking'),
     path('notifications/', views.notifications, name='notifications'),
     path('notifications/<int:notification_id>/read/', views.mark_notification_read, name='mark_notification_read'),
     path('notifications/read-all/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
+    path('tenants/<int:user_id>/', views.tenant_profile, name='tenant_profile'),
     path('profile/', views.profile, name='profile'),
 
 ] 
