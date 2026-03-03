@@ -1,5 +1,5 @@
 from django import forms 
-from .models import home, Property, Profile
+from .models import home, Property, Profile, Testimonial
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -120,3 +120,23 @@ class ProfileUpdateForm(forms.ModelForm):
                 field.widget.attrs["class"] = "form-control"
             if name == "phone_number":
                 field.widget.attrs["placeholder"] = "Phone number"
+
+
+class TestimonialForm(forms.ModelForm):
+    class Meta:
+        model = Testimonial
+        fields = ["role", "rating", "message"]
+        widgets = {
+            "rating": forms.Select(),
+            "message": forms.Textarea(
+                attrs={
+                    "rows": 4,
+                    "placeholder": "Share your experience with our platform...",
+                }
+            )
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs["class"] = "form-control"

@@ -183,6 +183,119 @@ Home Rental
     padding: 0.6rem 1.2rem;
   }
 
+  .why-choose {
+    padding-top: 1.4rem;
+    padding-bottom: 0.8rem;
+  }
+
+  .why-card {
+    height: 100%;
+    border-radius: 1rem;
+    background: #ffffff;
+    border: 1px solid #dfe5ef;
+    box-shadow: 0 8px 22px rgba(16, 28, 44, 0.08);
+    padding: 1.2rem;
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  }
+
+  .why-card:hover {
+    transform: translateY(-6px);
+    border-color: #cbd6ea;
+    box-shadow: 0 14px 30px rgba(16, 28, 44, 0.14);
+  }
+
+  .why-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 0.85rem;
+    display: grid;
+    place-items: center;
+    margin-bottom: 0.85rem;
+    background: linear-gradient(140deg, #ecf2ff, #f2fbf7);
+    color: #1c4fcc;
+    font-size: 1.2rem;
+  }
+
+  .why-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    color: #142033;
+  }
+
+  .why-copy {
+    margin: 0;
+    color: #4d5c70;
+    line-height: 1.5;
+  }
+
+  .testimonials {
+    padding-top: 1.2rem;
+    padding-bottom: 1rem;
+  }
+
+  .testimonial-card {
+    height: 100%;
+    border-radius: 1rem;
+    background: #ffffff;
+    border: 1px solid #dfe5ef;
+    box-shadow: 0 8px 22px rgba(16, 28, 44, 0.08);
+    padding: 1.25rem;
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  }
+
+  .testimonial-card:hover {
+    transform: translateY(-6px);
+    border-color: #cbd6ea;
+    box-shadow: 0 14px 30px rgba(16, 28, 44, 0.14);
+  }
+
+  .testimonial-form-wrap {
+    border-radius: 1rem;
+    border: 1px solid #dfe5ef;
+    background: #ffffff;
+    box-shadow: 0 8px 22px rgba(16, 28, 44, 0.08);
+    padding: 1.25rem;
+  }
+
+  .testimonial-form-label {
+    font-weight: 600;
+    color: #1b2b3f;
+    margin-bottom: 0.4rem;
+  }
+
+  .testimonial-text {
+    color: #344559;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  .testimonial-user {
+    margin: 0;
+    font-weight: 700;
+    color: #142033;
+  }
+
+  .testimonial-meta {
+    margin: 0;
+    color: #6b7a8d;
+    font-size: 0.92rem;
+  }
+
+  .testimonial-empty {
+    border-radius: 1rem;
+    border: 1px dashed #cfd9e8;
+    background: #fafcff;
+    padding: 1.25rem;
+    text-align: center;
+    color: #58677b;
+  }
+
+  .testimonial-rating {
+    margin-bottom: 0.6rem;
+    color: #f4b400;
+  }
+
   .reveal {
     opacity: 0;
     transform: translateY(22px);
@@ -299,6 +412,112 @@ Home Rental
     </div>
   </div>
 </section>
+
+<section class="container why-choose">
+  <div class="text-center mb-4 mb-lg-5 reveal">
+    <h2 class="fw-bold mb-2">Why Choose Us</h2>
+    <p class="text-muted mb-0">Built to make renting safer, simpler, and faster for everyone.</p>
+  </div>
+  <div class="row g-3 g-lg-4">
+    <div class="col-12 col-sm-6 col-lg-3">
+      <article class="why-card reveal reveal-delay-1">
+        <div class="why-icon"><i class="fa-solid fa-badge-check"></i></div>
+        <h3 class="why-title">Verified Listings</h3>
+        <p class="why-copy">Review trusted property details with better listing quality and fewer surprises.</p>
+      </article>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+      <article class="why-card reveal reveal-delay-2">
+        <div class="why-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <h3 class="why-title">Secure Communication</h3>
+        <p class="why-copy">Connect through a platform designed for safer interactions between owners and tenants.</p>
+      </article>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+      <article class="why-card reveal reveal-delay-3">
+        <div class="why-icon"><i class="fa-solid fa-user-tie"></i></div>
+        <h3 class="why-title">Direct Owner Contact</h3>
+        <p class="why-copy">Speak directly with property owners to clarify details and decide with confidence.</p>
+      </article>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+      <article class="why-card reveal">
+        <div class="why-icon"><i class="fa-solid fa-bolt"></i></div>
+        <h3 class="why-title">Fast Booking</h3>
+        <p class="why-copy">Move from search to booking quickly with a straightforward and efficient flow.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="container testimonials">
+  <div class="text-center mb-4 mb-lg-5 reveal">
+    <h2 class="fw-bold mb-2">Testimonials</h2>
+    <p class="text-muted mb-0">What renters and owners say about using our platform.</p>
+  </div>
+  <div class="testimonial-form-wrap reveal mb-4 mb-lg-5">
+    {% if request.user.is_authenticated %}
+      <h3 class="h5 mb-3">Add Your Testimonial</h3>
+      <form method="post" action="{% url 'home_list' %}">
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-12 col-md-4">
+            <label class="testimonial-form-label" for="{{ testimonial_form.role.id_for_label }}">I am a</label>
+            {{ testimonial_form.role }}
+            {% if testimonial_form.role.errors %}
+              <div class="text-danger small mt-1">{{ testimonial_form.role.errors|join:", " }}</div>
+            {% endif %}
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="testimonial-form-label" for="{{ testimonial_form.rating.id_for_label }}">Rating (1-5)</label>
+            {{ testimonial_form.rating }}
+            {% if testimonial_form.rating.errors %}
+              <div class="text-danger small mt-1">{{ testimonial_form.rating.errors|join:", " }}</div>
+            {% endif %}
+          </div>
+          <div class="col-12">
+            <label class="testimonial-form-label" for="{{ testimonial_form.message.id_for_label }}">Your experience</label>
+            {{ testimonial_form.message }}
+            {% if testimonial_form.message.errors %}
+              <div class="text-danger small mt-1">{{ testimonial_form.message.errors|join:", " }}</div>
+            {% endif %}
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary">Submit Testimonial</button>
+          </div>
+        </div>
+      </form>
+    {% else %}
+      <p class="mb-0">
+        <a href="{% url 'login' %}">Login</a> to add your testimonial and help others trust the platform.
+      </p>
+    {% endif %}
+  </div>
+  <div class="row g-3 g-lg-4">
+    {% for testimonial in testimonials %}
+      <div class="col-12 col-md-6 col-lg-4">
+        <article class="testimonial-card reveal">
+          <div class="testimonial-rating" aria-label="{{ testimonial.rating }} out of 5 stars">
+            <i class="{% if testimonial.rating >= 1 %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
+            <i class="{% if testimonial.rating >= 2 %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
+            <i class="{% if testimonial.rating >= 3 %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
+            <i class="{% if testimonial.rating >= 4 %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
+            <i class="{% if testimonial.rating >= 5 %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
+          </div>
+          <p class="testimonial-text mb-3">{{ testimonial.message }}</p>
+          <p class="testimonial-user">{{ testimonial.user.username }}</p>
+          <p class="testimonial-meta">{{ testimonial.get_role_display }}</p>
+        </article>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="testimonial-empty reveal">
+          No testimonials yet. Be the first to share your experience.
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const revealItems = document.querySelectorAll(".reveal:not(.is-visible)");
@@ -327,3 +546,4 @@ Home Rental
   });
 </script>
 {% endblock %}
+

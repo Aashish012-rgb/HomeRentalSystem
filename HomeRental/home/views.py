@@ -7,6 +7,7 @@ from .models import (
     Profile,
     BookingCancellationNotification,
     BookingAcceptanceNotification,
+    Testimonial,
 )
 from .forms import (
     PropertyForm,
@@ -14,6 +15,7 @@ from .forms import (
     UserRegistrationForm,
     UserUpdateForm,
     ProfileUpdateForm,
+    TestimonialForm,
 )
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, get_user_model
@@ -22,7 +24,27 @@ from django.http import HttpResponseForbidden
 User = get_user_model()
 
 def index(request):
-    return render(request, 'index.html')
+    if request.method == "POST":
+        if not request.user.is_authenticated:
+            return redirect("login")
+        testimonial_form = TestimonialForm(request.POST)
+        if testimonial_form.is_valid():
+            testimonial = testimonial_form.save(commit=False)
+            testimonial.user = request.user
+            testimonial.save()
+            return redirect("home_list")
+    else:
+        testimonial_form = TestimonialForm()
+
+    testimonials = Testimonial.objects.select_related("user").order_by("-created_at")[:6]
+    return render(
+        request,
+        "index.html",
+        {
+            "testimonials": testimonials,
+            "testimonial_form": testimonial_form,
+        },
+    )
 
 
 def home_list(request):
