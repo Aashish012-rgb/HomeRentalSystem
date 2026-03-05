@@ -3,72 +3,114 @@
 {% block title %}My Profile{% endblock %}
 
 {% block content %}
-<section class="container py-4 py-lg-5">
+<section class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-12 col-lg-8">
-            <article class="card shadow-sm">
-                <div class="card-body p-4 p-lg-5">
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-                        <h1 class="h3 mb-0">My Profile</h1>
-                        <a href="{% url 'password_change' %}" class="btn btn-outline-primary btn-sm">Change Password</a>
+        <div class="col-12 col-lg-10">
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-primary text-white py-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <h1 class="h3 mb-0">
+                            <i class="fas fa-user-circle me-2"></i>My Profile
+                        </h1>
+                        <a href="{% url 'password_change' %}" class="btn btn-light btn-sm fw-semibold">
+                            <i class="fas fa-key me-2"></i>Change Password
+                        </a>
                     </div>
+                </div>
 
-                    <form method="post" enctype="multipart/form-data">
+                <div class="card-body p-5">
+                    <form method="post" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
 
-                        <div class="row g-3">
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                            {% endfor %}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endif %}
+
+                        <div class="row g-4">
                             <div class="col-12 col-md-4">
-                                <label class="form-label">Profile Picture</label>
-                                <div class="mb-2">
+                                <label class="form-label fw-semibold">Profile Picture</label>
+                                <div class="mb-3">
                                     {% if user.profile.image %}
-                                    <img src="{{ user.profile.image.url }}" alt="Profile photo" class="img-thumbnail" style="width: 120px; height: 120px; object-fit: cover;">
+                                    <img src="{{ user.profile.image.url }}" alt="Profile photo" class="img-thumbnail rounded-circle" style="width: 160px; height: 160px; object-fit: cover;">
                                     {% else %}
-                                    <div class="rounded-circle bg-light border d-inline-flex align-items-center justify-content-center fw-bold" style="width: 120px; height: 120px; font-size: 2rem;">
+                                    <div class="rounded-circle bg-light border border-2 d-inline-flex align-items-center justify-content-center fw-bold" style="width: 160px; height: 160px; font-size: 3rem; color: #88a0d8;">
                                         {{ user.username|first|upper }}
                                     </div>
                                     {% endif %}
                                 </div>
-                                {{ profile_form.image }}
+                                <div class="mb-3">
+                                    {{ profile_form.image }}
+                                </div>
                             </div>
 
                             <div class="col-12 col-md-8">
                                 <div class="row g-3">
                                     <div class="col-12 col-md-6">
-                                        <label class="form-label">First Name</label>
+                                        <label class="form-label fw-semibold">First Name</label>
                                         {{ user_form.first_name }}
                                     </div>
                                     <div class="col-12 col-md-6">
-                                        <label class="form-label">Last Name</label>
+                                        <label class="form-label fw-semibold">Last Name</label>
                                         {{ user_form.last_name }}
                                     </div>
                                     <div class="col-12 col-md-6">
-                                        <label class="form-label">Username</label>
+                                        <label class="form-label fw-semibold">Username</label>
                                         {{ user_form.username }}
                                     </div>
                                     <div class="col-12 col-md-6">
-                                        <label class="form-label">ID Number</label>
+                                        <label class="form-label fw-semibold">User ID</label>
                                         <input type="text" class="form-control" value="{{ user.id }}" disabled>
                                     </div>
                                     <div class="col-12">
-                                        <label class="form-label">Email</label>
+                                        <label class="form-label fw-semibold">Email</label>
                                         {{ user_form.email }}
                                     </div>
                                     <div class="col-12">
-                                        <label class="form-label">Phone Number</label>
+                                        <label class="form-label fw-semibold">Phone Number</label>
                                         {{ profile_form.phone_number }}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="mt-4 d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
-                            <a href="{% url 'home_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                        <div class="mt-5 d-flex gap-3 flex-wrap">
+                            <button type="submit" class="btn btn-primary btn-lg fw-semibold">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                            <a href="{% url 'home_list' %}" class="btn btn-outline-secondary btn-lg fw-semibold">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
                         </div>
                     </form>
                 </div>
-            </article>
+            </div>
         </div>
     </div>
 </section>
+
+<style>
+  .form-control, .form-select {
+    border-radius: 0.5rem;
+    border: 1px solid #dee2e6;
+    padding: 0.65rem 1rem;
+  }
+  
+  .form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+  }
+  
+  .btn-lg {
+    padding: 0.75rem 2rem;
+  }
+  
+  .img-thumbnail {
+    border: 3px solid #dee2e6;
+  }
+</style>
 {% endblock %}

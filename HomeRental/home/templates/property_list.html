@@ -1,8 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}
-Properties
-{% endblock %}
+{% block title %}Properties{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -22,19 +20,16 @@ Properties
     object-fit: cover;
   }
 
-  .property-grid-card .card-body {
-    padding: 0.9rem;
-  }
-
   .property-filter-form {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     flex-wrap: nowrap;
   }
 
   .property-filter-select {
-    min-width: 180px;
+    min-width: 160px;
+    border-radius: 0.5rem;
   }
 
   @media (max-width: 575.98px) {
@@ -52,12 +47,15 @@ Properties
 
 {% block content %}
 <section class="container py-4 py-lg-5">
-  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-    <h1 class="h2 mb-0">Properties</h1>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-5">
+    <div>
+      <h1 class="h2 mb-0"><i class="fas fa-list text-primary me-2"></i>Browse Properties</h1>
+      <p class="text-muted small mt-1">Find your perfect rental home</p>
+    </div>
     <div class="d-flex align-items-center gap-2 flex-wrap">
       <form method="GET" class="mb-0 property-filter-form">
         <select name="location" onchange="this.form.submit()" class="form-select property-filter-select">
-          <option value="">All Locations</option>
+          <option value="">📍 All Locations</option>
           {% for location in locations %}
           <option value="{{ location }}" {% if selected_location == location %}selected{% endif %}>
             {{ location }}
@@ -65,17 +63,13 @@ Properties
           {% endfor %}
         </select>
         <select name="sort" onchange="this.form.submit()" class="form-select property-filter-select">
-          <option value="">Price</option>
-          <option value="low_to_high" {% if sort_option == "low_to_high" %}selected{% endif %}>
-             Low to High
-          </option>
-          <option value="high_to_low" {% if sort_option == "high_to_low" %}selected{% endif %}>
-             High to Low
-          </option>
+          <option value="">💰 Price</option>
+          <option value="low_to_high" {% if sort_option == "low_to_high" %}selected{% endif %}>Low to High</option>
+          <option value="high_to_low" {% if sort_option == "high_to_low" %}selected{% endif %}>High to Low</option>
         </select>
       </form>
       {% if user.is_authenticated %}
-      <a class="btn btn-primary rounded-pill px-4" href="{% url 'property' %}">Create Property</a>
+      <a class="btn btn-success rounded-pill px-4" href="{% url 'property' %}"><i class="fas fa-plus me-2"></i>New Property</a>
       {% endif %}
     </div>
   </div>
@@ -84,24 +78,26 @@ Properties
     {% for property in properties %}
     <div class="col-12 col-md-6 col-lg-3">
       <article class="card h-100 shadow-sm property-grid-card">
+        <div class="card-header bg-info text-white py-3">
+          <h2 class="h6 mb-0"><i class="fas fa-building me-2"></i>{{ property.title }}</h2>
+        </div>
         {% if property.image %}
         <div class="image-hover-wrap">
           <img src="{{ property.image.url }}" class="card-img-top image-hover-zoom property-grid-image" alt="{{ property.title }}">
         </div>
         {% endif %}
         <div class="card-body d-flex flex-column">
-          <h2 class="h5 card-title">{{ property.title }}</h2>
-          <p class="mb-1"><strong>Location:</strong> {{ property.location }}</p>
-          <p class="mb-1"><strong>Type:</strong> {{ property.property_type|title }}</p>
-          <p class="mb-2"><strong>Price:</strong> {{ property.price }}</p>
-          <p class="text-muted mb-3">{{ property.description|truncatewords:16 }}</p>
-          <div class="d-flex gap-2 mt-auto">
+          <p class="mb-2 small"><i class="fas fa-map-marker-alt text-info me-2"></i>{{ property.location }}</p>
+          <p class="mb-2 small"><i class="fas fa-door-open text-info me-2"></i>{{ property.property_type|title }}</p>
+          <p class="mb-3 small fw-semibold"><i class="fas fa-tag text-success me-2"></i>{{ property.price }}</p>
+          <p class="text-muted mb-3 small">{{ property.description|truncatewords:14 }}</p>
+          <div class="d-flex gap-2 mt-auto flex-wrap">
             {% if request.user != property.user %}
-            <a class="btn btn-primary btn-sm" href="{% url 'property_detail' property.id %}?view=compact">View Property</a>
+            <a class="btn btn-primary btn-sm" href="{% url 'property_detail' property.id %}?view=compact"><i class="fas fa-eye me-1"></i>View</a>
             {% endif %}
             {% if user.is_authenticated and property.user_id == user.id %}
-            <a class="btn btn-outline-primary btn-sm" href="{% url 'property_edit' property.id %}">Edit</a>
-            <a class="btn btn-outline-danger btn-sm" href="{% url 'property_delete' property.id %}">Delete</a>
+            <a class="btn btn-outline-primary btn-sm" href="{% url 'property_edit' property.id %}"><i class="fas fa-edit me-1"></i>Edit</a>
+            <a class="btn btn-outline-danger btn-sm" href="{% url 'property_delete' property.id %}"><i class="fas fa-trash me-1"></i>Delete</a>
             {% endif %}
           </div>
         </div>
@@ -109,7 +105,10 @@ Properties
     </div>
     {% empty %}
     <div class="col-12">
-      <div class="alert alert-light border mb-0">No properties found.</div>
+      <div class="alert alert-info border rounded p-4 text-center">
+        <i class="fas fa-inbox fa-2x mb-3 d-block"></i>
+        <p class="mb-0"><strong>No properties found</strong><br><small>Try adjusting your filters or create a new listing</small></p>
+      </div>
     </div>
     {% endfor %}
   </div>
