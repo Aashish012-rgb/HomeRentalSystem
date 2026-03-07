@@ -1,0 +1,149 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Ratings & Reviews | Ghar Setu
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .reviews-page {
+    max-width: 1200px;
+  }
+
+  .reviews-title {
+    font-size: clamp(2rem, 3.8vw, 3rem);
+    font-weight: 800;
+    color: #132137;
+  }
+
+  .reviews-subtitle {
+    color: #5f6f85;
+    font-size: 1.15rem;
+  }
+
+  .review-form-wrap {
+    border-radius: 1.2rem;
+    border: 1px solid #d8e0ec;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(14, 22, 34, 0.08);
+    padding: clamp(1.25rem, 2.5vw, 2rem);
+  }
+
+  .review-form-label {
+    font-weight: 700;
+    color: #1b2b3f;
+    margin-bottom: 0.45rem;
+  }
+
+  .review-card {
+    border-radius: 1rem;
+    border: 1px solid #dfe5ef;
+    background: #ffffff;
+    box-shadow: 0 8px 20px rgba(16, 28, 44, 0.07);
+    padding: 1.2rem;
+    height: 100%;
+  }
+
+  .review-stars {
+    color: #f4b400;
+    margin-bottom: 0.6rem;
+  }
+
+  .review-message {
+    color: #344559;
+    margin-bottom: 0.85rem;
+  }
+
+  .review-user {
+    margin: 0;
+    font-weight: 700;
+    color: #152136;
+  }
+
+  .review-role {
+    margin: 0;
+    color: #6b7a8d;
+    font-size: 0.92rem;
+  }
+
+  .review-empty {
+    border-radius: 1rem;
+    border: 1px dashed #cfd9e8;
+    background: #fafcff;
+    padding: 1.2rem;
+    text-align: center;
+    color: #58677b;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container reviews-page py-4 py-lg-5">
+  <div class="text-center mb-4 mb-lg-5">
+    <h1 class="reviews-title mb-2">Ratings & Reviews</h1>
+    <p class="reviews-subtitle mb-0">What renters and owners say about using our platform.</p>
+  </div>
+
+  <div class="review-form-wrap mb-4 mb-lg-5">
+    {% if request.user.is_authenticated %}
+      <h2 class="h3 mb-4">Add Your Review</h2>
+      <form method="post" action="{% url 'reviews' %}">
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="review-form-label" for="{{ testimonial_form.role.id_for_label }}">I am a</label>
+            {{ testimonial_form.role }}
+            {% if testimonial_form.role.errors %}
+              <div class="text-danger small mt-1">{{ testimonial_form.role.errors|join:", " }}</div>
+            {% endif %}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="review-form-label" for="{{ testimonial_form.rating.id_for_label }}">Rating (1-5)</label>
+            {{ testimonial_form.rating }}
+            {% if testimonial_form.rating.errors %}
+              <div class="text-danger small mt-1">{{ testimonial_form.rating.errors|join:", " }}</div>
+            {% endif %}
+          </div>
+          <div class="col-12">
+            <label class="review-form-label" for="{{ testimonial_form.message.id_for_label }}">Your experience</label>
+            {{ testimonial_form.message }}
+            {% if testimonial_form.message.errors %}
+              <div class="text-danger small mt-1">{{ testimonial_form.message.errors|join:", " }}</div>
+            {% endif %}
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary">Submit Review</button>
+          </div>
+        </div>
+      </form>
+    {% else %}
+      <p class="mb-0">
+        <a href="{% url 'login' %}">Login</a> to rate us and share your experience.
+      </p>
+    {% endif %}
+  </div>
+
+  <div class="row g-3 g-lg-4">
+    {% for testimonial in testimonials %}
+      <div class="col-12 col-md-6 col-lg-4">
+        <article class="review-card">
+          <div class="review-stars" aria-label="{{ testimonial.rating }} out of 5 stars">
+            <i class="{% if testimonial.rating >= 1 %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
+            <i class="{% if testimonial.rating >= 2 %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
+            <i class="{% if testimonial.rating >= 3 %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
+            <i class="{% if testimonial.rating >= 4 %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
+            <i class="{% if testimonial.rating >= 5 %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
+          </div>
+          <p class="review-message">{{ testimonial.message }}</p>
+          <p class="review-user">{{ testimonial.user.username }}</p>
+          <p class="review-role">{{ testimonial.get_role_display }}</p>
+        </article>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="review-empty">No testimonials yet. Be the first to share your experience.</div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

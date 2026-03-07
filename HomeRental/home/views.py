@@ -20,6 +20,9 @@ from .forms import (
 )
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, get_user_model
+from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.http import HttpResponseForbidden
 import re
 from urllib.parse import quote
@@ -37,27 +40,27 @@ def about(request):
     
     team_members = [
         {
-            'name': 'Rajesh Kumar',
-            'role': 'Founder & CEO',
-            'bio': 'Visionary leader with 15+ years in real estate technology',
-            'icon': 'fa-user-tie'
+            'name': 'Aashish Kumar Shah',
+            'role': 'Leader',
+            'bio': 'Student of Bsc.(HONS) Computing',
+            'icon': ''
         },
         {
-            'name': 'Priya Sharma',
-            'role': 'CTO',
-            'bio': 'Tech expert specializing in scalable web platforms',
+            'name': 'Abhishek Koirala',
+            'role': 'Member',
+            'bio': 'Student of Bsc.(HONS) Computing',
             'icon': 'fa-computer'
         },
         {
-            'name': 'Amit Patel',
-            'role': 'Head of Operations',
-            'bio': 'Operations specialist ensuring smooth user experiences',
+            'name': 'Anushka Sangroula',
+            'role': 'Member',
+            'bio': 'Student of Bsc.(HONS) Computing',
             'icon': 'fa-cogs'
         },
         {
-            'name': 'Neha Singh',
-            'role': 'Customer Success Manager',
-            'bio': 'Dedicated to providing exceptional customer service',
+            'name': 'Hirdaya Shiwakoti',
+            'role': 'Member',
+            'bio': 'Student of Bsc.(HONS) Computing',
             'icon': 'fa-headset'
         },
     ]
@@ -131,6 +134,17 @@ def about(request):
 
 
 def index(request):
+    testimonials = Testimonial.objects.select_related("user").order_by("-created_at")[:6]
+    return render(
+        request,
+        "index.html",
+        {
+            "testimonials": testimonials,
+        },
+    )
+
+
+def reviews(request):
     if request.method == "POST":
         if not request.user.is_authenticated:
             return redirect("login")
@@ -139,17 +153,90 @@ def index(request):
             testimonial = testimonial_form.save(commit=False)
             testimonial.user = request.user
             testimonial.save()
-            return redirect("home_list")
+            return redirect("reviews")
     else:
         testimonial_form = TestimonialForm()
 
-    testimonials = Testimonial.objects.select_related("user").order_by("-created_at")[:6]
+    testimonials = Testimonial.objects.select_related("user").order_by("-created_at")
     return render(
         request,
-        "index.html",
+        "reviews.html",
         {
             "testimonials": testimonials,
             "testimonial_form": testimonial_form,
+        },
+    )
+
+
+def help_page(request):
+    faq_items = [
+        {
+            "question": "How do I create an account?",
+            "answer": "Go to Register from the navbar, fill in your details, and submit the form to create your account.",
+            "keywords": "account register sign up login",
+        },
+        {
+            "question": "How do I list a property?",
+            "answer": "Login first, open the property form, enter property details, choose the map location, upload an image, and submit.",
+            "keywords": "list property owner upload",
+        },
+        {
+            "question": "How can I book a property?",
+            "answer": "Open a property from the listings page and click Book Now. Your booking request is sent to the property owner.",
+            "keywords": "book booking tenant reserve",
+        },
+        {
+            "question": "How will I know if my booking is accepted?",
+            "answer": "You will receive a notification in the system when the owner accepts your booking.",
+            "keywords": "booking accepted notification update",
+        },
+        {
+            "question": "How do I contact the property owner?",
+            "answer": "Open the property details page and use the provided contact information to reach the owner.",
+            "keywords": "contact owner landlord phone email",
+        },
+    ]
+
+    form_data = {
+        "name": request.user.get_full_name() if request.user.is_authenticated else "",
+        "email": request.user.email if request.user.is_authenticated else "",
+        "subject": "",
+        "message": "",
+        "preferred_contact": "email",
+    }
+
+    if request.method == "POST":
+        form_data = {
+            "name": request.POST.get("name", "").strip(),
+            "email": request.POST.get("email", "").strip(),
+            "subject": request.POST.get("subject", "").strip(),
+            "message": request.POST.get("message", "").strip(),
+            "preferred_contact": request.POST.get("preferred_contact", "email").strip() or "email",
+        }
+
+        required_values = [form_data["name"], form_data["email"], form_data["subject"], form_data["message"]]
+        if not all(required_values):
+            messages.error(request, "Please complete all required fields before sending your message.")
+        elif len(form_data["message"]) < 20:
+            messages.error(request, "Please write at least 20 characters in your message for better support.")
+        else:
+            try:
+                validate_email(form_data["email"])
+            except ValidationError:
+                messages.error(request, "Please enter a valid email address.")
+            else:
+                messages.success(
+                    request,
+                    "Thanks! Your message has been received. Our support team will contact you shortly.",
+                )
+                return redirect("help")
+
+    return render(
+        request,
+        "help.html",
+        {
+            "faq_items": faq_items,
+            "form_data": form_data,
         },
     )
 

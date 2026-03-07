@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Support - Ghar Setu{% endblock %}
+
+{% block extra_head %}
+<style>
+  .contact-hero {
+    border-radius: 1rem;
+    overflow: hidden;
+    min-height: 280px;
+    position: relative;
+    background-image:
+      linear-gradient(120deg, rgba(15, 29, 44, 0.88), rgba(15, 29, 44, 0.5)),
+      url("https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1600&q=80");
+    background-size: cover;
+    background-position: center;
+    color: #f7fbff;
+  }
+
+  .contact-hero-content {
+    max-width: 720px;
+    padding: clamp(1.5rem, 4vw, 3rem);
+  }
+
+  .contact-card {
+    border: 1px solid #dbe4ef;
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(16, 28, 44, 0.08);
+  }
+
+  .contact-info-item {
+    border: 1px solid #e4ebf5;
+    border-radius: 0.8rem;
+    background: #fbfdff;
+    padding: 0.9rem;
+  }
+
+  .contact-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 0.85rem;
+  }
+
+  .faq-search {
+    border-radius: 0.75rem;
+  }
+
+  .message-counter {
+    font-size: 0.82rem;
+    color: #6b7a8d;
+  }
+
+  .copy-btn {
+    white-space: nowrap;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container py-4 py-lg-5">
+  <section class="contact-hero shadow-sm mb-4 mb-lg-5">
+    <div class="contact-hero-content">
+      <p class="text-uppercase fw-semibold small mb-2">Contact Center</p>
+      <h1 class="display-5 fw-bold mb-3">Need help with booking, listing, or account setup?</h1>
+      <p class="mb-0 text-white-50">Send us your message and our team will guide you with a clear next step.</p>
+    </div>
+  </section>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert {% if 'success' in message.tags %}alert-success{% else %}alert-danger{% endif %} shadow-sm mb-4">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="row g-4">
+    <div class="col-12 col-lg-5">
+      <div class="card contact-card h-100">
+        <div class="card-body p-4">
+          <h2 class="h4 fw-bold mb-3">Contact Details</h2>
+          <p class="text-muted mb-4">Reach us directly or leave a message through the form.</p>
+
+          <div class="contact-info-item mb-3">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <div>
+                <p class="small text-muted mb-1">Email</p>
+                <p class="mb-0 fw-semibold">support@homerental.com</p>
+              </div>
+              <button type="button" class="btn btn-outline-secondary btn-sm copy-btn" data-copy-target="support@homerental.com">Copy</button>
+            </div>
+          </div>
+
+          <div class="contact-info-item mb-3">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <div>
+                <p class="small text-muted mb-1">Phone</p>
+                <p class="mb-0 fw-semibold">+977 9800000000</p>
+              </div>
+              <button type="button" class="btn btn-outline-secondary btn-sm copy-btn" data-copy-target="+977 9800000000">Copy</button>
+            </div>
+          </div>
+
+          <div class="contact-info-item mb-4">
+            <p class="small text-muted mb-1">Office</p>
+            <p class="mb-0 fw-semibold">Putalisadak, Kathmandu, Nepal</p>
+          </div>
+
+          <div class="d-grid gap-2">
+            <a class="btn btn-primary" href="mailto:support@homerental.com?subject=Support%20Request%20from%20Ghar%20Setu">Send Email Now</a>
+            <a class="btn btn-outline-primary" href="tel:+9779800000000">Call Support</a>
+          </div>
+
+          <hr class="my-4">
+
+          <div class="row g-3">
+            <div class="col-12 col-sm-6 col-lg-12">
+              <img class="contact-image" src="https://images.unsplash.com/photo-1552581234-26160f608093?auto=format&fit=crop&w=900&q=80" alt="Support team collaboration">
+            </div>
+            <div class="col-12 col-sm-6 col-lg-12">
+              <img class="contact-image" src="https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=900&q=80" alt="Customer support call desk">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-7">
+      <div class="card contact-card mb-4">
+        <div class="card-body p-4 p-lg-5">
+          <h2 class="h4 fw-bold mb-2">Send a Message</h2>
+          <p class="text-muted mb-4">We usually reply within one business day.</p>
+
+          <form id="contactForm" method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <label class="form-label fw-semibold" for="id_name">Full Name</label>
+                <input class="form-control" id="id_name" name="name" type="text" required value="{{ form_data.name|default_if_none:'' }}">
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label class="form-label fw-semibold" for="id_email">Email</label>
+                <input class="form-control" id="id_email" name="email" type="email" required value="{{ form_data.email|default_if_none:'' }}">
+              </div>
+
+              <div class="col-12 col-md-7">
+                <label class="form-label fw-semibold" for="id_subject">Subject</label>
+                <input class="form-control" id="id_subject" name="subject" type="text" required value="{{ form_data.subject|default_if_none:'' }}">
+              </div>
+
+              <div class="col-12 col-md-5">
+                <label class="form-label fw-semibold" for="id_preferred_contact">Preferred Contact</label>
+                <select class="form-select" id="id_preferred_contact" name="preferred_contact">
+                  <option value="email" {% if form_data.preferred_contact == "email" %}selected{% endif %}>Email</option>
+                  <option value="call" {% if form_data.preferred_contact == "call" %}selected{% endif %}>Phone Call</option>
+                  <option value="whatsapp" {% if form_data.preferred_contact == "whatsapp" %}selected{% endif %}>WhatsApp</option>
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-semibold" for="id_message">Message</label>
+                <textarea class="form-control" id="id_message" name="message" rows="6" maxlength="1000" required>{{ form_data.message|default_if_none:'' }}</textarea>
+                <div class="d-flex justify-content-between mt-1">
+                  <small class="text-muted">Please include enough detail so we can help faster.</small>
+                  <span class="message-counter" id="messageCounter">0 / 1000</span>
+                </div>
+              </div>
+            </div>
+
+            <button id="contactSubmitButton" class="btn btn-primary mt-4" type="submit">Send Message</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card contact-card">
+        <div class="card-body p-4 p-lg-5">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+            <h2 class="h5 fw-bold mb-0">Frequently Asked Questions</h2>
+            <input id="faqSearch" class="form-control faq-search" type="search" placeholder="Search question">
+          </div>
+
+          <div class="accordion" id="helpFaqAccordion">
+            {% for faq in faq_items %}
+              <div class="accordion-item mb-2 rounded faq-item" data-faq-item data-keywords="{{ faq.keywords|lower }}">
+                <h3 class="accordion-header" id="faqHeading{{ forloop.counter }}">
+                  <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse{{ forloop.counter }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="faqCollapse{{ forloop.counter }}">
+                    {{ faq.question }}
+                  </button>
+                </h3>
+                <div id="faqCollapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="faqHeading{{ forloop.counter }}" data-bs-parent="#helpFaqAccordion">
+                  <div class="accordion-body">
+                    {{ faq.answer }}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+          <p id="faqEmpty" class="text-muted small mb-0 d-none">No matching FAQ found.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var messageInput = document.getElementById("id_message");
+    var messageCounter = document.getElementById("messageCounter");
+    if (messageInput && messageCounter) {
+      var updateCounter = function () {
+        var length = messageInput.value.length;
+        messageCounter.textContent = length + " / 1000";
+      };
+      updateCounter();
+      messageInput.addEventListener("input", updateCounter);
+    }
+
+    var faqSearch = document.getElementById("faqSearch");
+    var faqItems = document.querySelectorAll("[data-faq-item]");
+    var faqEmpty = document.getElementById("faqEmpty");
+    if (faqSearch && faqItems.length) {
+      faqSearch.addEventListener("input", function () {
+        var query = faqSearch.value.trim().toLowerCase();
+        var visibleCount = 0;
+        faqItems.forEach(function (item) {
+          var text = item.textContent.toLowerCase();
+          var keywords = item.getAttribute("data-keywords") || "";
+          var isMatch = text.indexOf(query) !== -1 || keywords.indexOf(query) !== -1;
+          item.style.display = isMatch ? "" : "none";
+          if (isMatch) {
+            visibleCount += 1;
+          }
+        });
+        if (faqEmpty) {
+          faqEmpty.classList.toggle("d-none", visibleCount > 0);
+        }
+      });
+    }
+
+    var copyButtons = document.querySelectorAll("[data-copy-target]");
+    copyButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        var value = button.getAttribute("data-copy-target") || "";
+        var restoreLabel = button.textContent;
+        var setCopiedLabel = function () {
+          button.textContent = "Copied";
+          window.setTimeout(function () {
+            button.textContent = restoreLabel;
+          }, 1200);
+        };
+
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(value).then(setCopiedLabel);
+          return;
+        }
+
+        var helper = document.createElement("textarea");
+        helper.value = value;
+        document.body.appendChild(helper);
+        helper.select();
+        document.execCommand("copy");
+        document.body.removeChild(helper);
+        setCopiedLabel();
+      });
+    });
+
+    var contactForm = document.getElementById("contactForm");
+    var submitButton = document.getElementById("contactSubmitButton");
+    if (contactForm && submitButton) {
+      contactForm.addEventListener("submit", function () {
+        submitButton.disabled = true;
+        submitButton.textContent = "Sending...";
+      });
+    }
+  });
+</script>
+{% endblock %}

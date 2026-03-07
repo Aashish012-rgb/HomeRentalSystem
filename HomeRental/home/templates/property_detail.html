@@ -17,8 +17,8 @@
                     </div>
                 </div>
 
-                {% if property.image %}
-                <img src="{{ property.image.url }}" 
+                {% if property.image_url %}
+                <img src="{{ property.image_url }}" 
                      class="card-img-top img-fluid" 
                      style="max-height:320px;object-fit:cover;" 
                      alt="{{ property.title }}">
@@ -46,7 +46,7 @@
                             <p class="fw-semibold mb-1">
                                 <i class="fas fa-tag text-info me-2"></i>Price
                             </p>
-                            <p class="text-muted">{{ property.price }}</p>
+                            <p class="text-muted">Rs. {{ property.price }}</p>
                         </div>
 
                         {% if property.contact_name or property.contact_phone or property.contact_email %}

@@ -78,18 +78,18 @@
     {% for property in properties %}
     <div class="col-12 col-md-6 col-lg-3">
       <article class="card h-100 shadow-sm property-grid-card">
-        <div class="card-header bg-info text-white py-3">
+        <div class="card-header bg-white text-dark py-3">
           <h2 class="h6 mb-0"><i class="fas fa-building me-2"></i>{{ property.title }}</h2>
         </div>
-        {% if property.image %}
+        {% if property.image_url %}
         <div class="image-hover-wrap">
-          <img src="{{ property.image.url }}" class="card-img-top image-hover-zoom property-grid-image" alt="{{ property.title }}">
+          <img src="{{ property.image_url }}" class="card-img-top image-hover-zoom property-grid-image" alt="{{ property.title }}">
         </div>
         {% endif %}
         <div class="card-body d-flex flex-column">
           <p class="mb-2 small"><i class="fas fa-map-marker-alt text-info me-2"></i>{{ property.location }}</p>
           <p class="mb-2 small"><i class="fas fa-door-open text-info me-2"></i>{{ property.property_type|title }}</p>
-          <p class="mb-3 small fw-semibold"><i class="fas fa-tag text-success me-2"></i>{{ property.price }}</p>
+          <p class="mb-3 small fw-semibold"><i class="fas fa-tag text-success me-2"></i>Rs. {{ property.price }}</p>
           <p class="text-muted mb-3 small">{{ property.description|truncatewords:14 }}</p>
           <div class="d-flex gap-2 mt-auto flex-wrap">
             {% if request.user != property.user %}

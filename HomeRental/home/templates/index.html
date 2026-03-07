@@ -3,7 +3,7 @@
 
 
 {% block title %}
-Home Rental
+Ghar Setu
 {% endblock %}
 
 {% block extra_head %}
@@ -380,7 +380,7 @@ Home Rental
 <section class="container py-4 py-lg-5">
   <div class="home-hero shadow-sm">
     <div class="home-hero-content">
-      <p class="hero-tagline reveal is-visible">Sajilo Ghar Rental Platform</p>
+      <p class="hero-tagline reveal is-visible">Ghar Setu Rental Platform</p>
       <h1 class="hero-title reveal is-visible reveal-delay-1">Trusted spaces for living, renting, and growing</h1>
       <p class="hero-subtext reveal is-visible reveal-delay-2">
         Browse homes, rooms, and apartments with clear details and direct owner contact.
@@ -493,42 +493,9 @@ Home Rental
     <p class="text-muted mb-0">What renters and owners say about using our platform.</p>
   </div>
   <div class="testimonial-form-wrap reveal mb-4 mb-lg-5">
-    {% if request.user.is_authenticated %}
-      <h3 class="h5 mb-3">Add Your Review</h3>
-      <form method="post" action="{% url 'home_list' %}">
-        {% csrf_token %}
-        <div class="row g-3">
-          <div class="col-12 col-md-4">
-            <label class="testimonial-form-label" for="{{ testimonial_form.role.id_for_label }}">I am a</label>
-            {{ testimonial_form.role }}
-            {% if testimonial_form.role.errors %}
-              <div class="text-danger small mt-1">{{ testimonial_form.role.errors|join:", " }}</div>
-            {% endif %}
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="testimonial-form-label" for="{{ testimonial_form.rating.id_for_label }}">Rating (1-5)</label>
-            {{ testimonial_form.rating }}
-            {% if testimonial_form.rating.errors %}
-              <div class="text-danger small mt-1">{{ testimonial_form.rating.errors|join:", " }}</div>
-            {% endif %}
-          </div>
-          <div class="col-12">
-            <label class="testimonial-form-label" for="{{ testimonial_form.message.id_for_label }}">Your experience</label>
-            {{ testimonial_form.message }}
-            {% if testimonial_form.message.errors %}
-              <div class="text-danger small mt-1">{{ testimonial_form.message.errors|join:", " }}</div>
-            {% endif %}
-          </div>
-          <div class="col-12">
-            <button type="submit" class="btn btn-primary">Submit Review</button>
-          </div>
-        </div>
-      </form>
-    {% else %}
-      <p class="mb-0">
-        <a href="{% url 'login' %}">Login</a> to add your testimonial and help others trust the platform.
-      </p>
-    {% endif %}
+    <h3 class="h5 mb-2">Want to share your experience?</h3>
+    <p class="text-muted mb-3">Click below to rate us on a dedicated reviews page.</p>
+    <a class="btn btn-primary" href="{% url 'reviews' %}">Rate Us</a>
   </div>
   <div class="row g-3 g-lg-4">
     {% for testimonial in testimonials %}

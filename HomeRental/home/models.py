@@ -30,6 +30,20 @@ class Property(models.Model):
     def __str__(self):
         return self.title
 
+    @property
+    def image_url(self):
+        """Return a usable image URL only when the backing file exists."""
+        if not self.image:
+            return ""
+
+        try:
+            if self.image.storage.exists(self.image.name):
+                return self.image.url
+        except Exception:
+            return ""
+
+        return ""
+
 
 class Favorite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="favorites")

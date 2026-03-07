@@ -50,6 +50,7 @@
     height: 72px;
     border-radius: 50%;
     object-fit: cover;
+    border: 2px solid #e7eef8;
   }
 
   .stats-number {
@@ -115,7 +116,7 @@
       </div>
     </section>
 
-    <section class="mb-5">
+    {% comment %} <section class="mb-5">
       <div class="d-flex justify-content-between align-items-end mb-3">
         <h2 class="h4 fw-bold mb-0">Our Impact</h2>
         <span class="text-muted small">Updated from platform activity</span>
@@ -132,7 +133,7 @@
         </div>
         {% endfor %}
       </div>
-    </section>
+    </section> {% endcomment %}
 
     <section class="mb-5">
       <h2 class="h4 fw-bold mb-4">Why Choose Us</h2>
@@ -175,11 +176,9 @@
         <div class="col-md-6 col-lg-3">
           <div class="card hover-lift text-center shadow-sm h-100 border-0">
             <div class="card-body">
-              <img
-                class="team-avatar mb-3"
-                src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=300&q=80"
-                alt="{{ member.name }}"
-              >
+              {% if member.image %}
+              <img class="team-avatar mb-3" src="{{ member.image }}" alt="{{ member.name }}">
+              {% endif %}
               <h3 class="h6 fw-bold mb-1">{{ member.name }}</h3>
               <p class="text-primary small mb-2">{{ member.role }}</p>
               <p class="text-muted small mb-0">{{ member.bio }}</p>
@@ -190,7 +189,7 @@
       </div>
     </section>
 
-    <section class="mb-5">
+    {% comment %} <section class="mb-5">
       <h2 class="h4 fw-bold mb-4">Frequently Asked Questions</h2>
       <div class="accordion shadow-sm rounded overflow-hidden" id="aboutFaq">
         {% for faq in faqs %}
@@ -215,7 +214,7 @@
         </div>
         {% endfor %}
       </div>
-    </section>
+    </section> {% endcomment %}
 
     <section class="text-center text-white rounded-4 p-5"
       style="background: linear-gradient(120deg, #0d6efd, #0ea5e9);">
