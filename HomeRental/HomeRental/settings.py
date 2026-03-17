@@ -38,13 +38,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',  # Session management
     'django.contrib.messages',  # Message framework for user notifications
     'django.contrib.staticfiles',  # Static files management
+    'rest_framework',  # Django REST Framework for APIs
+    'corsheaders',  # CORS support for cross-origin requests
     'home',  # Our home rental app
+    'chat',  # Real-time chat app
 ]
 
 # ===== MIDDLEWARE CONFIGURATION =====
 # Middleware processes requests and responses
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',  # Security enhancements
+    'corsheaders.middleware.CorsMiddleware',  # CORS middleware
     'django.contrib.sessions.middleware.SessionMiddleware',  # Session management
     'django.middleware.common.CommonMiddleware',  # Common utilities
     'django.middleware.csrf.CsrfViewMiddleware',  # CSRF protection
@@ -73,7 +77,7 @@ TEMPLATES = [
     },
 ]
 
-# ===== WSGI APPLICATION =====
+# ===== WSGI/ASGI APPLICATION =====
 WSGI_APPLICATION = 'HomeRental.wsgi.application'  # WSGI application for web servers
 
 
@@ -140,3 +144,67 @@ LOGIN_URL = '/accounts/login'  # URL to redirect to for login
 LOGIN_REDIRECT_URL = '/home/'  # URL to redirect to after successful login
 LOGOUT_REDIRECT_URL = '/home/'  # URL to redirect to after logout
 
+
+# ===== EMAIL CONFIGURATION =====
+# Uses Django's built-in email backend (SMTP). If EMAIL_HOST is not set,
+# emails are printed to the console (useful for development).
+#
+# Configure via environment variables (examples):
+# - Gmail SMTP:
+#   EMAIL_HOST=smtp.gmail.com
+#   EMAIL_PORT=587
+#   EMAIL_USE_TLS=1
+#   EMAIL_HOST_USER=you@gmail.com
+#   EMAIL_HOST_PASSWORD=your_app_password
+# - SendGrid SMTP:
+#   EMAIL_HOST=smtp.sendgrid.net
+#   EMAIL_PORT=587
+#   EMAIL_USE_TLS=1
+#   EMAIL_HOST_USER=apikey
+#   EMAIL_HOST_PASSWORD=your_sendgrid_api_key
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "").strip()
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "1").lower() not in ("0", "false", "no")
+EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", "0").lower() in ("1", "true", "yes")
+EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT", "10"))
+
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL",
+    "Ghar Setu <no-reply@gharsetu.local>",
+)
+
+if EMAIL_HOST:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+else:
+    # Safe default for local development (prints emails to the console)
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+
+
+
+# ===== DJANGO REST FRAMEWORK CONFIGURATION =====
+# REST API settings for JSON serialization and permissions
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+
+# ===== CORS CONFIGURATION =====
+# Cross-Origin Resource Sharing settings
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+
+CORS_ALLOW_CREDENTIALS = True

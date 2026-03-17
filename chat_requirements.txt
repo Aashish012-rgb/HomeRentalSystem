@@ -1,0 +1,24 @@
+# Django Chat System Requirements
+# Install with: pip install -r chat_requirements.txt
+
+# Django Channels - WebSocket support
+channels==4.0.0
+asgiref==3.8.1
+
+# Optional: For production with Redis
+channels-redis==4.1.0
+redis==5.0.1
+
+# Django REST Framework - REST API
+djangorestframework==3.14.0
+django-filter==24.1
+
+# CORS Support
+django-cors-headers==4.3.0
+
+# Production Server
+daphne==4.0.0
+
+# Optional: Additional utilities
+python-dateutil==2.8.2
+pytz==2024.1

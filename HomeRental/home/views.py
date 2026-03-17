@@ -16,6 +16,7 @@ from .models import (
     BookingAcceptanceNotification,
     Testimonial,
 )
+from chat.models import Chat
 from .forms import (
     PropertyForm,
     homeForm,
@@ -23,6 +24,11 @@ from .forms import (
     UserUpdateForm,
     ProfileUpdateForm,
     TestimonialForm,
+)
+from .email_notifications import (
+    send_booking_accepted_email,
+    send_booking_canceled_email,
+    send_booking_confirmation_email,
 )
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, get_user_model
@@ -32,9 +38,10 @@ from django.core.validators import validate_email
 from django.http import HttpResponseForbidden
 from django.utils import timezone
 import re
-from urllib.parse import quote
+from urllib.parse import quote, urlencode
 
 User = get_user_model()  # Get the User model for use throughout views
+COORDINATE_LOCATION_RE = re.compile(r"^\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*$")
 
 def about(request):
     """
@@ -375,29 +382,28 @@ def add_property(request):
             prop = form.save(commit=False)
             prop.user = request.user  # Set property owner
             prop.save()
-            return redirect('properties')
+            return redirect('my_properties')
     else:
         form = PropertyForm()
 
     return render(request, 'add_property.html', {'form': form})
 
 
-def property_list(request):
+def _build_property_list_context(request, base_queryset, *, scope="all"):
     """
-    Display all properties with filtering and sorting options.
-    
-    Supports:
-    - Location filtering: Filter by property location
-    - Price sorting: Sort by price (low to high or high to low)
-    - Favorites tracking: Shows which properties user has favorited
+    Build context for property listing pages.
+
+    Parameters:
+    - base_queryset: Base Property queryset before applying UI filters
+    - scope: "all" | "mine" | "others" (used for UI labels and nav state)
     """
     sort_option = request.GET.get("sort", "")  # Get sort parameter from URL
     selected_location = request.GET.get("location", "")  # Get location filter from URL
+    if selected_location and COORDINATE_LOCATION_RE.match(selected_location):
+        selected_location = ""
 
-    # Start with all properties
-    properties = Property.objects.all()
-
-    # Apply location filter if selected
+    # Apply filters to the base queryset
+    properties = base_queryset
     if selected_location:
         properties = properties.filter(location__iexact=selected_location)
 
@@ -407,22 +413,42 @@ def property_list(request):
     elif sort_option == "high_to_low":
         properties = properties.order_by("-price")
 
-    # Get all unique locations for filter dropdown
-    locations = (
-        Property.objects.exclude(location__isnull=True)
+    # Get all unique locations for filter dropdown (based on the current scope)
+    locations_qs = (
+        base_queryset.exclude(location__isnull=True)
         .exclude(location__exact="")
         .order_by("location")
         .values_list("location", flat=True)
         .distinct()
     )
+    locations = [loc for loc in locations_qs if loc and not COORDINATE_LOCATION_RE.match(loc)]
 
-    # Build context dictionary with required data
+    page_title = "Browse Properties"
+    page_subtitle = "Find your perfect rental home"
+    if scope == "mine":
+        page_title = "My Properties"
+        page_subtitle = "Manage your property listings"
+    elif scope == "others":
+        page_title = "Browse Properties"
+        page_subtitle = "Browse listings from other owners"
+
+    filter_params = {}
+    if selected_location:
+        filter_params["location"] = selected_location
+    if sort_option:
+        filter_params["sort"] = sort_option
+    filter_query = f"?{urlencode(filter_params)}" if filter_params else ""
+
     context = {
         "properties": properties,
         "locations": locations,
         "selected_location": selected_location,
         "sort_option": sort_option,
+        "filter_query": filter_query,
         "favorite_property_ids": set(),
+        "scope": scope,
+        "page_title": page_title,
+        "page_subtitle": page_subtitle,
     }
 
     # If user is logged in, get their favorite properties
@@ -431,6 +457,47 @@ def property_list(request):
             Favorite.objects.filter(user=request.user).values_list("property_id", flat=True)
         )
 
+    return context
+
+
+def property_list(request):
+    """
+    Display properties with filtering and sorting options.
+    
+    Supports:
+    - Location filtering: Filter by property location
+    - Price sorting: Sort by price (low to high or high to low)
+    - Favorites tracking: Shows which properties user has favorited
+    """
+    qs = Property.objects.all()
+    if request.user.is_authenticated:
+        # Default to browsing other users' properties (Facebook-like explore behavior)
+        qs = qs.exclude(user=request.user)
+    context = _build_property_list_context(request, qs, scope="others")
+    return render(request, "property_list.html", context)
+
+
+@login_required
+def my_properties(request):
+    """
+    Display properties created by the currently logged-in user.
+    Useful for owners to manage their own listings.
+    """
+    context = _build_property_list_context(
+        request, Property.objects.filter(user=request.user), scope="mine"
+    )
+    return render(request, "property_list.html", context)
+
+
+def other_properties(request):
+    """
+    Display properties that are not owned by the currently logged-in user.
+    For anonymous users, this behaves like the main properties list.
+    """
+    qs = Property.objects.all()
+    if request.user.is_authenticated:
+        qs = qs.exclude(user=request.user)
+    context = _build_property_list_context(request, qs, scope="others")
     return render(request, "property_list.html", context)
 
 def property_detail(request, property_id):
@@ -446,21 +513,23 @@ def property_detail(request, property_id):
 
     # If current user is the property owner, show list of tenants who booked
     if request.user.is_authenticated and request.user == property_obj.user:
-        # Get all bookings for this property
-        property_bookings = Booking.objects.filter(
+        # Get all ACCEPTED bookings for this property to enable chat functionality
+        accepted_bookings = Booking.objects.filter(
             property=property_obj,
             owner=request.user,
+            is_accepted=True,
         ).select_related('booked_by').order_by('-booked_at')
 
         # Build list of unique tenants (avoid duplicates if user booked multiple times)
         seen_user_ids = set()
-        for booking in property_bookings:
+        for booking in accepted_bookings:
             if booking.booked_by_id not in seen_user_ids:
                 seen_user_ids.add(booking.booked_by_id)
                 booked_tenants.append(
                     {
                         "id": booking.booked_by_id,
                         "username": booking.booked_by.username,
+                        "booking_id": booking.id,
                     }
                 )
 
@@ -492,7 +561,7 @@ def property_edit(request, property_id):
             prop = form.save(commit=False)
             prop.user = request.user
             prop.save()
-            return redirect('properties')
+            return redirect('my_properties')
     else:
         form = PropertyForm(instance=prop)
     return render(request, 'add_property.html', {'form': form})
@@ -510,7 +579,7 @@ def property_delete(request, property_id):
     prop = get_object_or_404(Property, pk=property_id, user=request.user)  # Verify ownership
     if request.method == 'POST':
         prop.delete()
-        return redirect('properties')
+        return redirect('my_properties')
     return render(request, 'property_confirm_delete.html', {'property': prop})
 
 
@@ -576,6 +645,9 @@ def book_property(request, property_id):
             booking.booked_at = timezone.now()  # Update booking timestamp
             booking.save(update_fields=["is_read", "is_accepted", "booked_at"])
 
+        # Email customer a confirmation (won't block booking creation if it fails)
+        send_booking_confirmation_email(request, booking)
+
     return redirect('properties')
 
 @login_required
@@ -615,6 +687,10 @@ def notifications(request):
     for item in owner_notifications_qs:
         notifications.append(
             {
+                "kind": "booking_request",
+                "type_label": "Booking request",
+                "accent": "primary",
+                "icon": "fa-calendar-plus",
                 "message": f"{item.booked_by.username} booked your property {item.property.title}",
                 "created_at": item.booked_at,
                 "is_read": item.is_read,
@@ -622,6 +698,7 @@ def notifications(request):
                 "can_accept": item.is_read and not item.is_accepted,  # Can accept if not already accepted
                 "is_accepted": item.is_accepted,
                 "booking_id": item.id,
+                "property_id": item.property.id,
             }
         )
 
@@ -630,6 +707,10 @@ def notifications(request):
     for item in tenant_notifications_qs:
         notifications.append(
             {
+                "kind": "booking_canceled",
+                "type_label": "Canceled",
+                "accent": "danger",
+                "icon": "fa-circle-xmark",
                 "message": f"{item.owner.username} canceled your booking for {item.property.title}",
                 "created_at": item.canceled_at,
                 "is_read": item.is_read,
@@ -637,37 +718,35 @@ def notifications(request):
                 "can_accept": False,
                 "is_accepted": False,
                 "booking_id": None,
+                "property_id": item.property.id,
             }
         )
 
     # ===== BUILD TENANT ACCEPTANCE NOTIFICATIONS =====
     # When owner accepts tenant's booking
     for item in tenant_acceptance_qs:
-        owner_phone = ""
-        # Extract owner's phone number if available (for WhatsApp link)
-        if hasattr(item.owner, "profile") and item.owner.profile.phone_number:
-            # Remove all non-digits (wa.me expects digits only with country code)
-            owner_phone = re.sub(r"\D", "", item.owner.profile.phone_number)
-
-        # Generate WhatsApp URL if owner has phone number
-        whatsapp_url = ""
-        if owner_phone:
-            # Create pre-filled WhatsApp message
-            msg = quote(
-                f"Hello, I have booked your property {item.property.title}."
-            )
-            whatsapp_url = f"https://wa.me/{owner_phone}?text={msg}"
-
+        # Find the accepted booking to link to chat
+        booking = Booking.objects.filter(
+            property=item.property,
+            booked_by=item.tenant,
+            owner=item.owner,
+            is_accepted=True
+        ).first()
+        
         notifications.append(
             {
+                "kind": "booking_accepted",
+                "type_label": "Accepted",
+                "accent": "success",
+                "icon": "fa-circle-check",
                 "message": f"{item.owner.username} accepted your booking for {item.property.title}",
                 "created_at": item.accepted_at,
                 "is_read": item.is_read,
                 "can_cancel": False,
                 "can_accept": False,
-                "is_accepted": False,
-                "booking_id": None,
-                "whatsapp_url": whatsapp_url,
+                "is_accepted": True,
+                "booking_id": booking.id if booking else None,
+                "property_id": item.property.id,
             }
         )
 
@@ -706,6 +785,24 @@ def cancel_booking(request, booking_id):
         tenant=booking.booked_by,
         owner=booking.owner,
     )
+
+    cancellation_reason = (
+        "The property owner canceled your accepted booking."
+        if booking.is_accepted
+        else "The property owner rejected your booking request."
+    )
+    refund_details = (
+        "No payment is collected through Ghar Setu, so refunds are not processed here. "
+        "If you made a payment directly to the owner, please contact them for next steps."
+    )
+
+    # Email tenant about cancellation (best-effort)
+    send_booking_canceled_email(
+        request,
+        booking,
+        cancellation_reason=cancellation_reason,
+        refund_details=refund_details,
+    )
     # Delete the original booking
     booking.delete()
     return redirect(request.META.get('HTTP_REFERER', 'properties'))
@@ -719,6 +816,7 @@ def accept_booking(request, booking_id):
     POST only: Owner can accept a booking request
     Creates a BookingAcceptanceNotification so tenant is notified
     Sets booking.is_accepted to True to prevent further changes
+    Auto-creates a Chat instance for owner-tenant communication
     """
     if request.method != "POST":
         return redirect(request.META.get('HTTP_REFERER', 'notifications'))
@@ -743,6 +841,13 @@ def accept_booking(request, booking_id):
     # Mark booking as accepted
     booking.is_accepted = True
     booking.save(update_fields=["is_accepted"])
+    
+    # Create Chat room and add participants
+    chat, created = Chat.objects.get_or_create(booking=booking)
+    chat.participants.add(booking.owner, booking.booked_by)
+    
+    # Email tenant with acceptance confirmation (best-effort)
+    send_booking_accepted_email(request, booking)
     return redirect(request.META.get('HTTP_REFERER', 'notifications'))
 
 
@@ -767,11 +872,19 @@ def tenant_profile(request, user_id):
 
     # Get tenant's profile info if exists
     tenant_profile_obj = Profile.objects.filter(user=tenant).first()
+
     # Get all bookings this tenant made on owner's properties
     tenant_bookings = Booking.objects.filter(
         owner=request.user,
         booked_by=tenant,
     ).select_related('property').order_by('-booked_at')
+
+    tenant_bookings_count = tenant_bookings.count()
+    accepted_bookings_count = tenant_bookings.filter(is_accepted=True).count()
+    distinct_properties_count = (
+        tenant_bookings.values_list("property_id", flat=True).distinct().count()
+    )
+    latest_booking = tenant_bookings.first()
 
     return render(
         request,
@@ -780,6 +893,10 @@ def tenant_profile(request, user_id):
             'tenant': tenant,
             'tenant_profile': tenant_profile_obj,
             'tenant_bookings': tenant_bookings,
+            'tenant_bookings_count': tenant_bookings_count,
+            'accepted_bookings_count': accepted_bookings_count,
+            'distinct_properties_count': distinct_properties_count,
+            'latest_booking_date': getattr(latest_booking, "booked_at", None),
         },
     )
 
@@ -840,6 +957,40 @@ def profile(request):
     # Get or create user profile
     profile_obj, _ = Profile.objects.get_or_create(user=request.user)
 
+    # ===== PROFILE STATS / ACTIVITY (for a richer profile page) =====
+    my_properties_qs = Property.objects.filter(user=request.user).order_by("-created_at")
+    favorites_qs = (
+        Favorite.objects.filter(user=request.user)
+        .select_related("property")
+        .order_by("-created_at")
+    )
+    bookings_as_tenant_qs = (
+        Booking.objects.filter(booked_by=request.user)
+        .select_related("property", "owner")
+        .order_by("-booked_at")
+    )
+    booking_requests_qs = (
+        Booking.objects.filter(owner=request.user)
+        .select_related("property", "booked_by")
+        .order_by("-booked_at")
+    )
+
+    completion_total = 5
+    completion_filled = sum(
+        [
+            bool(request.user.first_name),
+            bool(request.user.last_name),
+            bool(request.user.email),
+            bool(profile_obj.phone_number),
+            bool(profile_obj.image),
+        ]
+    )
+    profile_completion = int((completion_filled / completion_total) * 100)
+
+    active_tab = request.GET.get("tab") or (
+        "settings" if request.method == "POST" else "overview"
+    )
+
     if request.method == "POST":
         # Process both user form and profile form
         user_form = UserUpdateForm(request.POST, instance=request.user)
@@ -850,7 +1001,11 @@ def profile(request):
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
+            messages.success(request, "Profile updated successfully.")
             return redirect("profile")
+
+        # If forms are invalid, keep Settings tab open so errors are visible
+        active_tab = "settings"
     else:
         # Load existing data into forms
         user_form = UserUpdateForm(instance=request.user)
@@ -862,5 +1017,43 @@ def profile(request):
         {
             "user_form": user_form,
             "profile_form": profile_form,
+            "active_tab": active_tab,
+            "profile_completion": profile_completion,
+            "my_properties_count": my_properties_qs.count(),
+            "favorites_count": favorites_qs.count(),
+            "bookings_as_tenant_count": bookings_as_tenant_qs.count(),
+            "booking_requests_count": booking_requests_qs.count(),
+            "my_properties": my_properties_qs[:6],
+            "recent_favorites": favorites_qs[:6],
+            "recent_bookings_as_tenant": bookings_as_tenant_qs[:6],
+            "recent_booking_requests": booking_requests_qs[:6],
         },
     )
+
+
+@login_required
+def chat_room(request, booking_id):
+    """
+    Display the chat room for a specific booking.
+    Only accessible to the tenant and owner of the accepted booking.
+    """
+    booking = get_object_or_404(Booking, id=booking_id)
+    
+    # Security: Ensure user is a participant and booking is accepted
+    if request.user != booking.booked_by and request.user != booking.owner:
+        return HttpResponseForbidden("You are not a participant of this booking.")
+    
+    if not booking.is_accepted:
+         return HttpResponseForbidden("Booking must be accepted to chat.")
+         
+    # Get or create chat (failsafe if not created during acceptance)
+    chat, created = Chat.objects.get_or_create(booking=booking)
+    if created:
+        chat.participants.add(booking.owner, booking.booked_by)
+    
+    return render(request, 'chat_room.html', {
+        'chat': chat,
+        'booking': booking,
+        'recipient': chat.get_other_participant(request.user),
+        'current_user': request.user
+    })
