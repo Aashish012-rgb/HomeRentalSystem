@@ -1,10 +1,12 @@
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import RequestFactory
 from django.test import TestCase
 from django.urls import reverse
 
 from chat.models import ChatMessage
 from chat.services import create_chat_message_for_user
+from home.context_processors import unread_notifications_count
 from home.models import Booking, BookingAcceptanceNotification, Property
 
 User = get_user_model()
@@ -201,3 +203,64 @@ class ChatMessageServiceTests(TestCase):
         self.assertEqual(payload["sender_id"], self.tenant.id)
         self.assertEqual(payload["content"], "Hello owner")
         self.assertEqual(ChatMessage.objects.count(), 1)
+
+
+class ChatUnreadStateTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.owner = User.objects.create_user(username="owner", password="testpass123")
+        self.tenant = User.objects.create_user(username="tenant", password="testpass123")
+        self.property = Property.objects.create(
+            user=self.owner,
+            title="Hilltop Stay",
+            description="Unread chat state property.",
+            price="29000.00",
+            location="Bhaktapur",
+            property_type="rent",
+            image=SimpleUploadedFile(
+                "property.jpg",
+                b"fake-image-bytes",
+                content_type="image/jpeg",
+            ),
+        )
+        self.booking = Booking.objects.create(
+            property=self.property,
+            booked_by=self.tenant,
+            owner=self.owner,
+            status=Booking.Status.ACCEPTED,
+            is_accepted=True,
+        )
+
+    def test_context_processor_exposes_unread_chat_count_and_recent_link(self):
+        ChatMessage.objects.create(
+            booking=self.booking,
+            sender=self.owner,
+            content="Are you still interested?",
+        )
+
+        request = self.factory.get("/")
+        request.user = self.tenant
+
+        context = unread_notifications_count(request)
+
+        self.assertEqual(context["unread_chat_count"], 1)
+        self.assertEqual(len(context["recent_chats"]), 1)
+        self.assertEqual(
+            context["recent_chats"][0]["url"],
+            reverse("chat_room", args=[self.booking.id]),
+        )
+        self.assertTrue(context["recent_chats"][0]["is_unread"])
+
+    def test_opening_chat_room_marks_incoming_messages_as_read(self):
+        message = ChatMessage.objects.create(
+            booking=self.booking,
+            sender=self.owner,
+            content="Please confirm your arrival time.",
+        )
+
+        self.client.login(username="tenant", password="testpass123")
+        response = self.client.get(reverse("chat_room", args=[self.booking.id]))
+
+        message.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(message.is_read)

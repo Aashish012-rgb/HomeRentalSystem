@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',  # Content types framework
     'django.contrib.sessions',  # Session management
     'django.contrib.messages',  # Message framework for user notifications
+    'daphne',  # Daphne provides the ASGI-aware runserver command used by Channels.
     'django.contrib.staticfiles',  # Static files management
     'channels',  # Django Channels for WebSocket support
     'chat',  # Accepted-booking chat app

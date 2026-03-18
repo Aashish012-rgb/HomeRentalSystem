@@ -6,8 +6,11 @@ from .services import get_chat_booking_for_user
 
 @login_required
 def chat_room(request, booking_id):
-    """Render the booking chat page for accepted-booking participants only."""
+    # Reuse the shared service so page access follows the same rules as websocket chat.
     booking = get_chat_booking_for_user(request.user, booking_id)
+    # Opening the room marks incoming messages as read for the current participant.
+    booking.chat_messages.exclude(sender=request.user).filter(is_read=False).update(is_read=True)
+    # Match the current model field name when loading message history.
     chat_messages = booking.chat_messages.select_related("sender")
 
     return render(
@@ -16,9 +19,6 @@ def chat_room(request, booking_id):
         {
             "booking": booking,
             "chat_messages": chat_messages,
-            "chat_bootstrap": {
-                "bookingId": booking.id,
-                "currentUserId": request.user.id,
-            },
+            "user_id": request.user.id,
         },
     )

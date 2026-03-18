@@ -89,6 +89,95 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
       {% if request.user.is_authenticated %}
 
+      <!-- MESSAGES DROPDOWN: Shows recent chat conversations and unread message count -->
+      <li class="nav-item dropdown me-2">
+
+        <a class="nav-link position-relative"
+        data-bs-toggle="dropdown"
+        href="#"
+        role="button"
+        aria-expanded="false"
+        aria-label="Messages">
+          <i class="fas fa-comment-dots"></i>
+
+          {% if unread_chat_count > 0 %}
+          <span class="notif-pulse"></span>
+          <span class="badge bg-danger position-absolute top-0 start-100 translate-middle notif-count-badge">
+            {{ unread_chat_count }}
+          </span>
+          {% endif %}
+        </a>
+
+        <ul class="dropdown-menu dropdown-menu-end shadow notif-dropdown p-0">
+          <li class="px-3 py-2 border-bottom">
+            <div class="d-flex align-items-center justify-content-between gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <i class="fas fa-comment-dots text-primary"></i>
+                <span class="fw-semibold">Messages</span>
+                {% if unread_chat_count > 0 %}
+                <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis">
+                  {{ unread_chat_count }} new
+                </span>
+                {% endif %}
+              </div>
+            </div>
+          </li>
+
+          <li class="notif-scroll">
+            <div class="list-group list-group-flush">
+              {% for chat in recent_chats %}
+              <a class="list-group-item list-group-item-action border-0 d-flex gap-2 align-items-start notif-item {% if chat.is_unread %}notif-unread{% endif %}"
+              href="{{ chat.url }}">
+                <span class="notif-icon bg-primary-subtle text-primary-emphasis">
+                  <i class="fas fa-message"></i>
+                </span>
+
+                <div class="flex-grow-1 min-w-0">
+                  <div class="d-flex align-items-start justify-content-between gap-2">
+                    <div class="message-dropdown-title {% if chat.is_unread %}fw-semibold{% endif %}">
+                      {{ chat.counterpart_name }}
+                    </div>
+                    <div class="small text-muted text-nowrap">
+                      {{ chat.created_at|timesince }} ago
+                    </div>
+                  </div>
+                  <div class="notif-message {% if chat.is_unread %}fw-semibold{% endif %}">
+                    {{ chat.preview }}
+                  </div>
+                  <div class="message-dropdown-subtitle">
+                    {{ chat.property_title }}
+                  </div>
+                </div>
+
+                {% if chat.is_unread %}
+                <span class="notif-dot bg-primary"></span>
+                {% endif %}
+              </a>
+              {% empty %}
+              <div class="px-3 py-4 text-center text-muted">
+                <i class="fas fa-comments mb-2" style="font-size: 1.4rem;"></i>
+                <div class="fw-semibold">No messages yet</div>
+                <div class="small">Accepted booking chats will show up here.</div>
+              </div>
+              {% endfor %}
+            </div>
+          </li>
+
+          <li class="border-top">
+            {% if recent_chats %}
+            <a class="dropdown-item text-center py-2"
+            href="{{ recent_chats.0.url }}">
+              Open latest chat
+            </a>
+            {% else %}
+            <span class="dropdown-item text-center py-2 text-muted">
+              No chats yet
+            </span>
+            {% endif %}
+          </li>
+        </ul>
+      </li>
+
       <!-- NOTIFICATIONS DROPDOWN: Shows recent booking notifications -->
       <li class="nav-item dropdown me-2">
  
@@ -187,7 +276,17 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
       {% endif %}
 
-      <!-- USER MENU DROPDOWN: Profile (auth) or login/register -->
+      {% if user.is_authenticated %}
+      <!-- PROFILE LINK: Clicking the user icon now opens the signed-in user's profile page directly. -->
+      <li class="nav-item">
+        <a class="nav-link"
+        href="{% url 'profile' %}"
+        aria-label="Profile">
+          <i class="fas fa-user-circle"></i>
+        </a>
+      </li>
+      {% else %}
+      <!-- USER MENU DROPDOWN: Login/register options for guests -->
       <li class="nav-item dropdown">
 
         <!-- User icon trigger for dropdown -->
@@ -197,22 +296,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
           <i class="fas fa-user-circle"></i>
         </a>
 
-        <!-- Dropdown menu with authenticated and unauthenticated options -->
+        <!-- Dropdown menu with unauthenticated options -->
         <ul class="dropdown-menu dropdown-menu-end shadow">
-
-          {% if user.is_authenticated %}
-
-          <!-- User info header: Shows username and email -->
-          <li class="px-3 py-2">
-            <a class="text-decoration-none" href="{% url 'profile' %}">
-              <strong>{{ user.username }}</strong>
-            </a><br>
-            <small class="text-muted">{{ user.email }}</small>
-          </li>
-
-          <!-- (Menu items removed) -->
-
-          {% else %}
 
           <!-- Login link for unauthenticated users -->
           <li>
@@ -228,11 +313,10 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
             </a>
           </li>
 
-          {% endif %}
-
         </ul>
 
       </li>
+      {% endif %}
 
     </ul>
 

@@ -9,6 +9,7 @@ from .models import (
     BookingCancellationNotification,
     BookingAcceptanceNotification,
 )
+from django.db.models import Q
 from django.urls import reverse
 
 NOTIFICATION_META = {
@@ -52,6 +53,8 @@ def unread_notifications_count(request):
         return {
             "unread_notifications_count": 0,
             "recent_notifications": [],
+            "unread_chat_count": 0,
+            "recent_chats": [],
         }
 
     # ===== FETCH NOTIFICATIONS FOR CURRENT USER =====
@@ -67,6 +70,20 @@ def unread_notifications_count(request):
     ).count()
     tenant_accepted_unread_count = BookingAcceptanceNotification.objects.filter(
         tenant=request.user, is_read=False
+    ).count()
+
+    from chat.models import ChatMessage
+
+    recent_chat_messages_qs = (
+        ChatMessage.objects.filter(
+            booking__status=Booking.Status.ACCEPTED,
+        )
+        .filter(Q(booking__booked_by=request.user) | Q(booking__owner=request.user))
+        .select_related("booking__property", "booking__booked_by", "booking__owner", "sender")
+        .order_by("-created_at", "-id")
+    )
+    unread_chat_count = recent_chat_messages_qs.exclude(sender=request.user).filter(
+        is_read=False
     ).count()
 
     # Notifications for property owners: when someone books their property
@@ -137,6 +154,32 @@ def unread_notifications_count(request):
         key=lambda n: n["created_at"],
         reverse=True,
     )[:5]  # Keep only 5 most recent notifications for display
+
+    recent_chats = []
+    seen_booking_ids = set()
+    for item in recent_chat_messages_qs[:25]:
+        if item.booking_id in seen_booking_ids:
+            continue
+
+        seen_booking_ids.add(item.booking_id)
+        counterpart = (
+            item.booking.owner
+            if item.booking.booked_by_id == request.user.id
+            else item.booking.booked_by
+        )
+        recent_chats.append(
+            {
+                "booking_id": item.booking_id,
+                "url": reverse("chat_room", args=[item.booking_id]),
+                "counterpart_name": counterpart.username,
+                "property_title": item.booking.property.title,
+                "preview": item.content,
+                "created_at": item.created_at,
+                "is_unread": item.sender_id != request.user.id and not item.is_read,
+            }
+        )
+        if len(recent_chats) == 5:
+            break
     
     # Count total unread notifications across all types
     count = owner_unread_count + tenant_canceled_unread_count + tenant_accepted_unread_count
@@ -145,4 +188,6 @@ def unread_notifications_count(request):
     return {
         "unread_notifications_count": count,  # Total unread count for badge display
         "recent_notifications": recent,  # List of recent notifications for dropdown
+        "unread_chat_count": unread_chat_count,
+        "recent_chats": recent_chats,
     }

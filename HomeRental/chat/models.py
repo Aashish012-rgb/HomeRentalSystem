@@ -19,11 +19,13 @@ class ChatMessage(models.Model):
     )
     content = models.TextField(max_length=1000)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
 
     class Meta:
         ordering = ("created_at", "id")
         indexes = [
             models.Index(fields=["booking", "created_at"]),
+            models.Index(fields=["is_read"]),
         ]
 
     def __str__(self):

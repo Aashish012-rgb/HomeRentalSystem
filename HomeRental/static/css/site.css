@@ -39,6 +39,22 @@
   overflow: hidden;
 }
 
+.message-dropdown-title {
+  font-size: 0.95rem;
+  line-height: 1.2;
+  color: #1f2d3d;
+}
+
+.message-dropdown-subtitle {
+  font-size: 0.82rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .notif-dot {
   width: 8px;
   height: 8px;
@@ -108,4 +124,3 @@
 .border-left-info {
   border-left-color: #0dcaf0 !important;
 }
-
