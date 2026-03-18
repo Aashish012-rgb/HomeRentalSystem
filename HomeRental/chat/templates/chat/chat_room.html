@@ -1,0 +1,147 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block title %}Booking Chat{% endblock %}
+
+{% block extra_head %}
+<style>
+  .chat-shell {
+    max-width: 920px;
+  }
+
+  .chat-history {
+    height: 460px;
+    overflow-y: auto;
+    background:
+      radial-gradient(circle at top right, rgba(13,110,253,0.08), transparent 35%),
+      linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+  }
+
+  .chat-message {
+    max-width: min(78%, 42rem);
+  }
+
+  .chat-message__bubble {
+    border-radius: 1rem;
+    padding: 0.85rem 1rem;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  }
+
+  .chat-message--mine {
+    margin-left: auto;
+  }
+
+  .chat-message--mine .chat-message__bubble {
+    background: linear-gradient(135deg, #0d6efd 0%, #2d8cff 100%);
+    color: #fff;
+    border-bottom-right-radius: 0.35rem;
+  }
+
+  .chat-message--theirs .chat-message__bubble {
+    background: #fff;
+    border: 1px solid rgba(13, 110, 253, 0.12);
+    border-bottom-left-radius: 0.35rem;
+  }
+
+  .chat-meta {
+    font-size: 0.78rem;
+    color: #6c757d;
+  }
+
+  .chat-message--mine .chat-meta {
+    text-align: right;
+  }
+
+  .chat-form-card {
+    background: #ffffff;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container py-4 py-lg-5">
+  {% url 'notifications' as back_fallback %}
+
+  <div class="chat-shell mx-auto">
+    <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap mb-3">
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        {% include "partials/back_button.html" with fallback_url=back_fallback label="Back" %}
+        <div>
+          <h1 class="h3 mb-1">Booking Chat</h1>
+          <div class="text-muted small">
+            Booking #{{ booking.id }} for {{ booking.property.title }}
+          </div>
+        </div>
+      </div>
+      <span class="badge text-bg-success px-3 py-2">
+        <i class="fas fa-circle-check me-1"></i>{{ booking.get_status_display }}
+      </span>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body d-flex justify-content-between gap-3 flex-wrap">
+        <div>
+          <div class="text-muted text-uppercase small fw-semibold">Tenant</div>
+          <div class="fw-semibold">{{ booking.booked_by.username }}</div>
+        </div>
+        <div>
+          <div class="text-muted text-uppercase small fw-semibold">Owner</div>
+          <div class="fw-semibold">{{ booking.owner.username }}</div>
+        </div>
+        <div>
+          <div class="text-muted text-uppercase small fw-semibold">Property</div>
+          <div class="fw-semibold">{{ booking.property.title }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-body chat-history p-3 p-lg-4" id="chatMessages">
+        {% for message in chat_messages %}
+        <div class="chat-message {% if message.sender_id == request.user.id %}chat-message--mine{% else %}chat-message--theirs{% endif %} mb-3">
+          <div class="chat-message__bubble">
+            <div class="small fw-semibold mb-1">
+              {% if message.sender_id == request.user.id %}You{% else %}{{ message.sender.username }}{% endif %}
+            </div>
+            <div>{{ message.content|linebreaksbr }}</div>
+          </div>
+          <div class="chat-meta mt-1">
+            {{ message.created_at|date:"M d, Y H:i" }}
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-center text-muted py-5" data-empty-state="true">
+          <i class="fas fa-comments fa-2x mb-3 d-block text-primary"></i>
+          <div class="fw-semibold">No messages yet</div>
+          <div class="small">Start the conversation with the owner or tenant.</div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="card-footer border-0 p-3 p-lg-4 chat-form-card">
+        <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-2">
+          <div id="chatStatus" class="small text-muted" aria-live="polite">Connecting to chat...</div>
+          <div id="chatError" class="small text-danger d-none" role="alert"></div>
+        </div>
+        <form id="chatForm" class="d-flex gap-2">
+          <input
+            id="chatInput"
+            type="text"
+            class="form-control"
+            maxlength="1000"
+            autocomplete="off"
+            placeholder="Type your message..."
+          >
+          <button id="chatSendButton" type="submit" class="btn btn-primary fw-semibold">
+            <i class="fas fa-paper-plane me-2"></i>Send
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ chat_bootstrap|json_script:"chat-bootstrap" }}
+<script src="{% static 'js/chat_room.js' %}"></script>
+{% endblock %}

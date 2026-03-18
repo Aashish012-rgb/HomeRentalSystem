@@ -9,6 +9,7 @@ from .models import (
     BookingCancellationNotification,
     BookingAcceptanceNotification,
 )
+from django.urls import reverse
 
 NOTIFICATION_META = {
     "booking_request": {
@@ -27,6 +28,8 @@ NOTIFICATION_META = {
         "type_label": "Accepted",
     },
 }
+
+ACCEPTED_CHAT_NOTIFICATION_MESSAGE = "Your booking has been accepted. You can now chat with the owner."
 
 
 def unread_notifications_count(request):
@@ -54,7 +57,10 @@ def unread_notifications_count(request):
     # ===== FETCH NOTIFICATIONS FOR CURRENT USER =====
 
     owner_unread_count = Booking.objects.filter(
-        owner=request.user, is_read=False
+        owner=request.user,
+        is_read=False,
+    ).exclude(
+        status=Booking.Status.REJECTED,
     ).count()
     tenant_canceled_unread_count = BookingCancellationNotification.objects.filter(
         tenant=request.user, is_read=False
@@ -66,6 +72,7 @@ def unread_notifications_count(request):
     # Notifications for property owners: when someone books their property
     owner_recent_qs = (
         Booking.objects.filter(owner=request.user)
+        .exclude(status=Booking.Status.REJECTED)
         .select_related("booked_by", "property")
         .order_by("-booked_at")[:10]
     )
@@ -114,8 +121,8 @@ def unread_notifications_count(request):
     tenant_accepted_recent = [
         {
             "kind": "booking_accepted",
-            "message": f"{item.owner.username} accepted your booking for {item.property.title}",
-            "url": f"/properties/{item.property.id}/",
+            "message": ACCEPTED_CHAT_NOTIFICATION_MESSAGE,
+            "url": reverse("notifications"),
             "created_at": item.accepted_at,
             "is_read": item.is_read,
             **NOTIFICATION_META["booking_accepted"],
@@ -139,4 +146,3 @@ def unread_notifications_count(request):
         "unread_notifications_count": count,  # Total unread count for badge display
         "recent_notifications": recent,  # List of recent notifications for dropdown
     }
-

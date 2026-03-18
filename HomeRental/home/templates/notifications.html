@@ -107,14 +107,13 @@
                     <i class="fas fa-up-right-from-square me-1"></i>View property
                 </a>
                 {% endif %}
-                
-                {# For tenants on accepted bookings, show Chat button #}
-                {% if notification.kind == 'booking_accepted' and notification.booking_id %}
+
+                {% if notification.can_chat and notification.booking_id %}
                 <a href="{% url 'chat_room' notification.booking_id %}" class="btn btn-sm btn-primary fw-semibold">
-                    <i class="fas fa-comments me-1"></i> Chat with Owner
+                    <i class="fas fa-comments me-1"></i>{{ notification.chat_label|default:"Chat Now" }}
                 </a>
                 {% endif %}
-
+                
                 {% if notification.can_accept and notification.booking_id %}
                 <!-- Accept booking button -->
                 <form method="post" action="{% url 'accept_booking' notification.booking_id %}" class="m-0">
@@ -134,13 +133,6 @@
              
             <!-- For confirmed bookings: Cancel button -->
             {% elif notification.can_cancel and notification.booking_id %}
-                {# For owners on accepted bookings, show Chat button #}
-                {% if notification.is_accepted %}
-                <a href="{% url 'chat_room' notification.booking_id %}" class="btn btn-sm btn-primary fw-semibold">
-                    <i class="fas fa-comments me-1"></i> Chat with Tenant
-                </a>
-                {% endif %}
-
                 <!-- Cancel booking button (for owners) -->
                 <form method="post" action="{% url 'cancel_booking' notification.booking_id %}" class="m-0">
                     {% csrf_token %}

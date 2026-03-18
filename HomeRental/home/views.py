@@ -16,7 +16,6 @@ from .models import (
     BookingAcceptanceNotification,
     Testimonial,
 )
-from chat.models import Chat
 from .forms import (
     PropertyForm,
     homeForm,
@@ -38,10 +37,11 @@ from django.core.validators import validate_email
 from django.http import HttpResponseForbidden
 from django.utils import timezone
 import re
-from urllib.parse import quote, urlencode
+from urllib.parse import urlencode
 
 User = get_user_model()  # Get the User model for use throughout views
 COORDINATE_LOCATION_RE = re.compile(r"^\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*$")
+ACCEPTED_CHAT_NOTIFICATION_MESSAGE = "Your booking has been accepted. You can now chat with the owner."
 
 def about(request):
     """
@@ -97,7 +97,7 @@ def about(request):
         },
         {
             'question': 'How do I contact the landlord?',
-            'answer': 'Once you book a property, you can message the landlord directly through our platform. They typically respond within a few hours.'
+            'answer': 'Once your booking is accepted, you can use the owner contact details shared in your booking update to reach them directly.'
         },
         {
             'question': 'Can I cancel a booking?',
@@ -131,8 +131,8 @@ def about(request):
             'icon': 'fa-life-ring'
         },
         {
-            'title': 'Direct Messaging',
-            'description': 'Communicate directly with landlords and tenants',
+            'title': 'Easy Contact',
+            'description': 'Reach landlords and tenants using the contact details shared on listings and updates',
             'icon': 'fa-envelope'
         },
         {
@@ -513,23 +513,23 @@ def property_detail(request, property_id):
 
     # If current user is the property owner, show list of tenants who booked
     if request.user.is_authenticated and request.user == property_obj.user:
-        # Get all ACCEPTED bookings for this property to enable chat functionality
-        accepted_bookings = Booking.objects.filter(
+        # Get all bookings for this property
+        property_bookings = Booking.objects.filter(
             property=property_obj,
             owner=request.user,
-            is_accepted=True,
+        ).exclude(
+            status=Booking.Status.REJECTED,
         ).select_related('booked_by').order_by('-booked_at')
 
         # Build list of unique tenants (avoid duplicates if user booked multiple times)
         seen_user_ids = set()
-        for booking in accepted_bookings:
+        for booking in property_bookings:
             if booking.booked_by_id not in seen_user_ids:
                 seen_user_ids.add(booking.booked_by_id)
                 booked_tenants.append(
                     {
                         "id": booking.booked_by_id,
                         "username": booking.booked_by.username,
-                        "booking_id": booking.id,
                     }
                 )
 
@@ -638,12 +638,20 @@ def book_property(request, property_id):
             booked_by=request.user,
             owner=property.user,
         )
-        # If booking already existed, reset notification flags
+        if booking.status == Booking.Status.ACCEPTED:
+            messages.info(
+                request,
+                "This booking is already accepted. You can open the chat from your notifications page.",
+            )
+            return redirect("notifications")
+
+        # If booking already existed, reset it to a fresh pending request
         if not created:
             booking.is_read = False
-            booking.is_accepted = False
             booking.booked_at = timezone.now()  # Update booking timestamp
-            booking.save(update_fields=["is_read", "is_accepted", "booked_at"])
+
+        booking.mark_pending()
+        booking.save(update_fields=["status", "is_accepted", "is_read", "booked_at"])
 
         # Email customer a confirmation (won't block booking creation if it fails)
         send_booking_confirmation_email(request, booking)
@@ -665,14 +673,14 @@ def notifications(request):
     # Fetch owner bookings (booking requests from tenants)
     owner_notifications_qs = request.user.owner_bookings.select_related(
         "booked_by", "property"
-    )
+    ).exclude(status=Booking.Status.REJECTED)
     # Fetch cancellation notifications for current user
     tenant_notifications_qs = request.user.cancellation_notifications.select_related(
         "owner", "property"
     )
     # Fetch acceptance notifications for current user
     tenant_acceptance_qs = request.user.acceptance_notifications.select_related(
-        "owner", "owner__profile", "property"
+        "owner", "owner__profile", "property", "booking"
     )
 
     # Mark all unread notifications as read on GET request
@@ -695,8 +703,10 @@ def notifications(request):
                 "created_at": item.booked_at,
                 "is_read": item.is_read,
                 "can_cancel": item.is_read,  # Can cancel after owner has seen notification
-                "can_accept": item.is_read and not item.is_accepted,  # Can accept if not already accepted
-                "is_accepted": item.is_accepted,
+                "can_accept": item.is_read and item.status == Booking.Status.PENDING,
+                "can_chat": item.chat_enabled,
+                "chat_label": "Chat Now",
+                "is_accepted": item.status == Booking.Status.ACCEPTED,
                 "booking_id": item.id,
                 "property_id": item.property.id,
             }
@@ -716,6 +726,7 @@ def notifications(request):
                 "is_read": item.is_read,
                 "can_cancel": False,
                 "can_accept": False,
+                "can_chat": False,
                 "is_accepted": False,
                 "booking_id": None,
                 "property_id": item.property.id,
@@ -725,27 +736,31 @@ def notifications(request):
     # ===== BUILD TENANT ACCEPTANCE NOTIFICATIONS =====
     # When owner accepts tenant's booking
     for item in tenant_acceptance_qs:
-        # Find the accepted booking to link to chat
-        booking = Booking.objects.filter(
-            property=item.property,
-            booked_by=item.tenant,
-            owner=item.owner,
-            is_accepted=True
-        ).first()
-        
+        chat_booking = item.booking if item.booking and item.booking.chat_enabled else None
+        if not chat_booking:
+            chat_booking = Booking.objects.filter(
+                property=item.property,
+                booked_by=item.tenant,
+                owner=item.owner,
+                status=Booking.Status.ACCEPTED,
+            ).first()
+        booking_id = chat_booking.id if chat_booking else None
+
         notifications.append(
             {
                 "kind": "booking_accepted",
                 "type_label": "Accepted",
                 "accent": "success",
                 "icon": "fa-circle-check",
-                "message": f"{item.owner.username} accepted your booking for {item.property.title}",
+                "message": ACCEPTED_CHAT_NOTIFICATION_MESSAGE,
                 "created_at": item.accepted_at,
                 "is_read": item.is_read,
                 "can_cancel": False,
                 "can_accept": False,
+                "can_chat": bool(chat_booking),
+                "chat_label": "Chat Now",
                 "is_accepted": True,
-                "booking_id": booking.id if booking else None,
+                "booking_id": booking_id,
                 "property_id": item.property.id,
             }
         )
@@ -774,7 +789,7 @@ def cancel_booking(request, booking_id):
         pk=booking_id,
         owner=request.user,
         is_read=True,
-    ).first()
+    ).exclude(status=Booking.Status.REJECTED).first()
 
     if not booking:
         return redirect(request.META.get('HTTP_REFERER', 'properties'))
@@ -803,8 +818,8 @@ def cancel_booking(request, booking_id):
         cancellation_reason=cancellation_reason,
         refund_details=refund_details,
     )
-    # Delete the original booking
-    booking.delete()
+    booking.mark_rejected()
+    booking.save(update_fields=["status", "is_accepted"])
     return redirect(request.META.get('HTTP_REFERER', 'properties'))
 
 
@@ -816,7 +831,6 @@ def accept_booking(request, booking_id):
     POST only: Owner can accept a booking request
     Creates a BookingAcceptanceNotification so tenant is notified
     Sets booking.is_accepted to True to prevent further changes
-    Auto-creates a Chat instance for owner-tenant communication
     """
     if request.method != "POST":
         return redirect(request.META.get('HTTP_REFERER', 'notifications'))
@@ -826,26 +840,24 @@ def accept_booking(request, booking_id):
         pk=booking_id,
         owner=request.user,
         is_read=True,
+        status=Booking.Status.PENDING,
     ).first()
 
     # Don't allow accepting if already accepted or booking doesn't exist
-    if not booking or booking.is_accepted:
+    if not booking:
         return redirect(request.META.get('HTTP_REFERER', 'notifications'))
 
     # Create acceptance notification for tenant
     BookingAcceptanceNotification.objects.create(
         property=booking.property,
+        booking=booking,
         tenant=booking.booked_by,
         owner=booking.owner,
     )
     # Mark booking as accepted
-    booking.is_accepted = True
-    booking.save(update_fields=["is_accepted"])
-    
-    # Create Chat room and add participants
-    chat, created = Chat.objects.get_or_create(booking=booking)
-    chat.participants.add(booking.owner, booking.booked_by)
-    
+    booking.mark_accepted()
+    booking.save(update_fields=["status", "is_accepted"])
+
     # Email tenant with acceptance confirmation (best-effort)
     send_booking_accepted_email(request, booking)
     return redirect(request.META.get('HTTP_REFERER', 'notifications'))
@@ -880,7 +892,7 @@ def tenant_profile(request, user_id):
     ).select_related('property').order_by('-booked_at')
 
     tenant_bookings_count = tenant_bookings.count()
-    accepted_bookings_count = tenant_bookings.filter(is_accepted=True).count()
+    accepted_bookings_count = tenant_bookings.filter(status=Booking.Status.ACCEPTED).count()
     distinct_properties_count = (
         tenant_bookings.values_list("property_id", flat=True).distinct().count()
     )
@@ -971,6 +983,7 @@ def profile(request):
     )
     booking_requests_qs = (
         Booking.objects.filter(owner=request.user)
+        .exclude(status=Booking.Status.REJECTED)
         .select_related("property", "booked_by")
         .order_by("-booked_at")
     )
@@ -1029,31 +1042,3 @@ def profile(request):
             "recent_booking_requests": booking_requests_qs[:6],
         },
     )
-
-
-@login_required
-def chat_room(request, booking_id):
-    """
-    Display the chat room for a specific booking.
-    Only accessible to the tenant and owner of the accepted booking.
-    """
-    booking = get_object_or_404(Booking, id=booking_id)
-    
-    # Security: Ensure user is a participant and booking is accepted
-    if request.user != booking.booked_by and request.user != booking.owner:
-        return HttpResponseForbidden("You are not a participant of this booking.")
-    
-    if not booking.is_accepted:
-         return HttpResponseForbidden("Booking must be accepted to chat.")
-         
-    # Get or create chat (failsafe if not created during acceptance)
-    chat, created = Chat.objects.get_or_create(booking=booking)
-    if created:
-        chat.participants.add(booking.owner, booking.booked_by)
-    
-    return render(request, 'chat_room.html', {
-        'chat': chat,
-        'booking': booking,
-        'recipient': chat.get_other_participant(request.user),
-        'current_user': request.user
-    })

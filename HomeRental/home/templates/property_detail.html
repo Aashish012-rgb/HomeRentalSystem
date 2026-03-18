@@ -408,23 +408,16 @@
 
                     {% if booked_tenants %}
 
-                    <div class="list-group list-group-flush">
+                    <ul class="list-group list-group-flush">
                         {% for tenant in booked_tenants %}
-                        <div class="list-group-item d-flex justify-content-between align-items-center gap-2">
-                            <div>
+                        <li class="list-group-item">
+                            <a href="{% url 'tenant_profile' tenant.id %}" class="fw-semibold text-decoration-none">
                                 <i class="fas fa-user-circle text-primary me-2"></i>
-                                <a href="{% url 'tenant_profile' tenant.id %}" class="fw-semibold text-decoration-none">{{ tenant.username }}</a>
-                            </div>
-                            <div>
-                                {% if tenant.booking_id %}
-                                <a href="{% url 'chat_room' tenant.booking_id %}" class="btn btn-sm btn-outline-primary fw-semibold">
-                                    <i class="fas fa-comments me-1"></i> Chat
-                                </a>
-                                {% endif %}
-                            </div>
-                        </div>
+                                {{ tenant.username }}
+                            </a>
+                        </li>
                         {% endfor %}
-                    </div>
+                    </ul>
 
                     {% else %}
 

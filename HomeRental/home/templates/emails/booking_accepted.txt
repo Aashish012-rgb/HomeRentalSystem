@@ -1,20 +1,23 @@
-Your Booking Has Been Accepted
+﻿Your Booking Has Been Accepted
 
 Hi {{ customer_name }},
  
 Great news! Your booking request for "{{ property_title }}" has been accepted.
  
-You can now communicate directly with the owner through our secure chat system to arrange move-in details and ask any questions.
+You can now contact the owner to confirm move-in details.
  
 Booking ID: #{{ booking_id }}
 Accepted on: {{ accepted_date }}
+Property: {{ property_title }}
+Location: {{ property_location }}
+Total amount: {{ total_amount }}
+
+Owner contact:
+Name: {{ owner_contact_name }}
+Phone: {{ owner_contact_phone }}
+Email: {{ owner_contact_email }}
+
+View property:
+{{ property_url }}
  
-Please use the link below to start chatting:
-{{ chat_url }}
- 
-Alternatively, you can find the chat in your bookings dashboard.
- 
-View booking details:
-{{ booking_url }}
- 
-— {{ site_name|default:"Ghar Setu" }}
+â€” {{ site_name|default:"Ghar Setu" }}

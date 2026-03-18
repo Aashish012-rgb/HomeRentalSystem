@@ -26,7 +26,16 @@ SECRET_KEY = 'django-insecure-^jfqx_ra3f5!_zp0#rr50cy5qav3sxx)hm*ob&v^_%4)3rm%5e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  # Set to False in production
 
-ALLOWED_HOSTS = []  # Add your domain names here in production
+# Hosts/origins allowed for both HTTP and WebSocket traffic.
+# Override in production with DJANGO_ALLOWED_HOSTS=example.com,www.example.com
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get(
+        "DJANGO_ALLOWED_HOSTS",
+        "localhost,127.0.0.1,[::1]",
+    ).split(",")
+    if host.strip()
+]
 
 
 # ===== INSTALLED APPLICATIONS =====
@@ -38,17 +47,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',  # Session management
     'django.contrib.messages',  # Message framework for user notifications
     'django.contrib.staticfiles',  # Static files management
-    'rest_framework',  # Django REST Framework for APIs
-    'corsheaders',  # CORS support for cross-origin requests
+    'channels',  # Django Channels for WebSocket support
+    'chat',  # Accepted-booking chat app
     'home',  # Our home rental app
-    'chat',  # Real-time chat app
 ]
 
 # ===== MIDDLEWARE CONFIGURATION =====
 # Middleware processes requests and responses
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',  # Security enhancements
-    'corsheaders.middleware.CorsMiddleware',  # CORS middleware
     'django.contrib.sessions.middleware.SessionMiddleware',  # Session management
     'django.middleware.common.CommonMiddleware',  # Common utilities
     'django.middleware.csrf.CsrfViewMiddleware',  # CSRF protection
@@ -59,6 +66,7 @@ MIDDLEWARE = [
 
 # ===== URL CONFIGURATION =====
 ROOT_URLCONF = 'HomeRental.urls'  # Root URL configuration
+ASGI_APPLICATION = 'HomeRental.asgi.application'  # ASGI app used by Channels/uvicorn
 
 # ===== TEMPLATE CONFIGURATION =====
 TEMPLATES = [
@@ -77,8 +85,30 @@ TEMPLATES = [
     },
 ]
 
-# ===== WSGI/ASGI APPLICATION =====
+# ===== WSGI APPLICATION =====
 WSGI_APPLICATION = 'HomeRental.wsgi.application'  # WSGI application for web servers
+
+
+# ===== CHANNELS / WEBSOCKETS =====
+# Default to an in-memory layer for local development. Set CHANNEL_REDIS_URL in
+# production to use a shared Redis-backed layer across multiple workers.
+CHANNEL_REDIS_URL = os.environ.get("CHANNEL_REDIS_URL", "").strip()
+
+if CHANNEL_REDIS_URL:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [CHANNEL_REDIS_URL],
+            },
+        }
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        }
+    }
 
 
 # ===== DATABASE CONFIGURATION =====
@@ -180,31 +210,3 @@ if EMAIL_HOST:
 else:
     # Safe default for local development (prints emails to the console)
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-
-
-
-# ===== DJANGO REST FRAMEWORK CONFIGURATION =====
-# REST API settings for JSON serialization and permissions
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20,
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
-}
-
-
-# ===== CORS CONFIGURATION =====
-# Cross-Origin Resource Sharing settings
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
-]
-
-CORS_ALLOW_CREDENTIALS = True

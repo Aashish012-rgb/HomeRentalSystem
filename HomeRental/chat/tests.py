@@ -1,0 +1,203 @@
+from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase
+from django.urls import reverse
+
+from chat.models import ChatMessage
+from chat.services import create_chat_message_for_user
+from home.models import Booking, BookingAcceptanceNotification, Property
+
+User = get_user_model()
+
+
+class BookingChatAccessTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(username="owner", password="testpass123")
+        self.tenant = User.objects.create_user(username="tenant", password="testpass123")
+        self.outsider = User.objects.create_user(username="outsider", password="testpass123")
+        self.property = Property.objects.create(
+            user=self.owner,
+            title="City Apartment",
+            description="A clean rental property for testing.",
+            price="25000.00",
+            location="Kathmandu",
+            property_type="rent",
+            image=SimpleUploadedFile(
+                "property.jpg",
+                b"fake-image-bytes",
+                content_type="image/jpeg",
+            ),
+        )
+
+    def create_booking(self, *, status):
+        booking = Booking.objects.create(
+            property=self.property,
+            booked_by=self.tenant,
+            owner=self.owner,
+            status=status,
+            is_accepted=status == Booking.Status.ACCEPTED,
+        )
+        return booking
+
+    def test_chat_room_requires_accepted_booking_for_participants(self):
+        booking = self.create_booking(status=Booking.Status.PENDING)
+        self.client.login(username="tenant", password="testpass123")
+
+        response = self.client.get(reverse("chat_room", args=[booking.id]))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_chat_room_allows_owner_and_tenant_after_acceptance(self):
+        booking = self.create_booking(status=Booking.Status.ACCEPTED)
+        chat_url = reverse("chat_room", args=[booking.id])
+
+        self.client.login(username="tenant", password="testpass123")
+        tenant_response = self.client.get(chat_url)
+        self.assertEqual(tenant_response.status_code, 200)
+
+        self.client.logout()
+        self.client.login(username="owner", password="testpass123")
+        owner_response = self.client.get(chat_url)
+        self.assertEqual(owner_response.status_code, 200)
+
+    def test_chat_room_blocks_unrelated_users(self):
+        booking = self.create_booking(status=Booking.Status.ACCEPTED)
+        self.client.login(username="outsider", password="testpass123")
+
+        response = self.client.get(reverse("chat_room", args=[booking.id]))
+
+        self.assertEqual(response.status_code, 403)
+
+
+class NotificationChatVisibilityTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(username="owner", password="testpass123")
+        self.tenant = User.objects.create_user(username="tenant", password="testpass123")
+        self.property = Property.objects.create(
+            user=self.owner,
+            title="Garden Flat",
+            description="Notification visibility test property.",
+            price="18000.00",
+            location="Pokhara",
+            property_type="rent",
+            image=SimpleUploadedFile(
+                "property.jpg",
+                b"fake-image-bytes",
+                content_type="image/jpeg",
+            ),
+        )
+
+    def test_notifications_hide_chat_for_pending_booking(self):
+        booking = Booking.objects.create(
+            property=self.property,
+            booked_by=self.tenant,
+            owner=self.owner,
+            status=Booking.Status.PENDING,
+        )
+        self.client.login(username="owner", password="testpass123")
+
+        response = self.client.get(reverse("notifications"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, reverse("chat_room", args=[booking.id]))
+
+    def test_notifications_hide_chat_when_accepted_booking_is_later_rejected(self):
+        booking = Booking.objects.create(
+            property=self.property,
+            booked_by=self.tenant,
+            owner=self.owner,
+            status=Booking.Status.ACCEPTED,
+            is_accepted=True,
+        )
+        BookingAcceptanceNotification.objects.create(
+            property=self.property,
+            booking=booking,
+            tenant=self.tenant,
+            owner=self.owner,
+        )
+
+        self.client.login(username="tenant", password="testpass123")
+        accepted_response = self.client.get(reverse("notifications"))
+        self.assertContains(accepted_response, reverse("chat_room", args=[booking.id]))
+
+        booking.mark_rejected()
+        booking.save(update_fields=["status", "is_accepted"])
+
+        rejected_response = self.client.get(reverse("notifications"))
+        self.assertNotContains(rejected_response, reverse("chat_room", args=[booking.id]))
+
+
+class ChatMessageServiceTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(username="owner", password="testpass123")
+        self.tenant = User.objects.create_user(username="tenant", password="testpass123")
+        self.outsider = User.objects.create_user(username="outsider", password="testpass123")
+        self.property = Property.objects.create(
+            user=self.owner,
+            title="Riverside Home",
+            description="Service-level chat test property.",
+            price="32000.00",
+            location="Lalitpur",
+            property_type="rent",
+            image=SimpleUploadedFile(
+                "property.jpg",
+                b"fake-image-bytes",
+                content_type="image/jpeg",
+            ),
+        )
+
+    def test_create_chat_message_requires_accepted_booking(self):
+        booking = Booking.objects.create(
+            property=self.property,
+            booked_by=self.tenant,
+            owner=self.owner,
+            status=Booking.Status.PENDING,
+        )
+
+        payload = create_chat_message_for_user(
+            booking_id=booking.id,
+            user_id=self.tenant.id,
+            content="Hello from a pending booking",
+        )
+
+        self.assertIsNone(payload)
+        self.assertFalse(ChatMessage.objects.exists())
+
+    def test_create_chat_message_blocks_unrelated_users(self):
+        booking = Booking.objects.create(
+            property=self.property,
+            booked_by=self.tenant,
+            owner=self.owner,
+            status=Booking.Status.ACCEPTED,
+            is_accepted=True,
+        )
+
+        payload = create_chat_message_for_user(
+            booking_id=booking.id,
+            user_id=self.outsider.id,
+            content="I should not be in this room",
+        )
+
+        self.assertIsNone(payload)
+        self.assertFalse(ChatMessage.objects.exists())
+
+    def test_create_chat_message_allows_accepted_booking_participants(self):
+        booking = Booking.objects.create(
+            property=self.property,
+            booked_by=self.tenant,
+            owner=self.owner,
+            status=Booking.Status.ACCEPTED,
+            is_accepted=True,
+        )
+
+        payload = create_chat_message_for_user(
+            booking_id=booking.id,
+            user_id=self.tenant.id,
+            content="Hello owner",
+        )
+
+        self.assertIsNotNone(payload)
+        self.assertEqual(payload["booking_id"], booking.id)
+        self.assertEqual(payload["sender_id"], self.tenant.id)
+        self.assertEqual(payload["content"], "Hello owner")
+        self.assertEqual(ChatMessage.objects.count(), 1)

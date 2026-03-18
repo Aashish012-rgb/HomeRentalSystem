@@ -318,8 +318,10 @@
                       </div>
 
                       <div class="d-flex align-items-center gap-2 flex-wrap">
-                        {% if booking.is_accepted %}
+                        {% if booking.status == 'ACCEPTED' %}
                         <span class="badge text-bg-success"><i class="fas fa-circle-check me-1"></i>Accepted</span>
+                        {% elif booking.status == 'REJECTED' %}
+                        <span class="badge text-bg-danger"><i class="fas fa-circle-xmark me-1"></i>Rejected</span>
                         {% else %}
                         <span class="badge text-bg-secondary"><i class="fas fa-hourglass-half me-1"></i>Pending</span>
                         {% endif %}
