@@ -12,8 +12,29 @@ document.addEventListener("DOMContentLoaded", () => {
     const chatStatus = document.getElementById("chat-status");
     const chatError = document.getElementById("chat-error");
     const chatSend = document.getElementById("chat-send");
+    const chatImageInput = document.getElementById("chat-image-input");
+    const chatImageButton = document.getElementById("chat-image-button");
+    const chatImagePreview = document.getElementById("chat-image-preview");
+    const chatImageName = document.getElementById("chat-image-name");
+    const chatImageClear = document.getElementById("chat-image-clear");
+    const csrfTokenInput = chatForm ? chatForm.querySelector("input[name='csrfmiddlewaretoken']") : null;
+    const uploadUrl = chatBootstrap.uploadUrl;
 
-    if (!messagesContainer || !chatForm || !chatInput || !chatStatus || !chatError || !chatSend) {
+    if (
+        !messagesContainer ||
+        !chatForm ||
+        !chatInput ||
+        !chatStatus ||
+        !chatError ||
+        !chatSend ||
+        !chatImageInput ||
+        !chatImageButton ||
+        !chatImagePreview ||
+        !chatImageName ||
+        !chatImageClear ||
+        !csrfTokenInput ||
+        !uploadUrl
+    ) {
         return;
     }
 
@@ -32,9 +53,19 @@ document.addEventListener("DOMContentLoaded", () => {
         chatStatus.dataset.tone = tone || "neutral";
     }
 
+    function selectedImageFile() {
+        return chatImageInput.files && chatImageInput.files[0] ? chatImageInput.files[0] : null;
+    }
+
+    function updateSendAvailability(enabled) {
+        const composerEnabled = typeof enabled === "boolean" ? enabled : !chatInput.disabled;
+        chatSend.disabled = !composerEnabled || (!chatInput.value.trim() && !selectedImageFile());
+    }
+
     function setComposerEnabled(enabled) {
         chatInput.disabled = !enabled;
-        chatSend.disabled = !enabled;
+        chatImageButton.disabled = !enabled;
+        updateSendAvailability(enabled);
     }
 
     function showError(message) {
@@ -55,9 +86,38 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    function updateImagePreview() {
+        const imageFile = selectedImageFile();
+        if (!imageFile) {
+            chatImagePreview.hidden = true;
+            chatImageName.textContent = "";
+            updateSendAvailability();
+            return;
+        }
+
+        chatImagePreview.hidden = false;
+        chatImageName.textContent = imageFile.name;
+        updateSendAvailability();
+    }
+
+    function clearSelectedImage() {
+        chatImageInput.value = "";
+        updateImagePreview();
+    }
+
     function buildMessageElement(data) {
+        const existingMessage = data.id
+            ? messagesContainer.querySelector(`[data-message-id="${data.id}"]`)
+            : null;
+        if (existingMessage) {
+            return null;
+        }
+
         const messageArticle = document.createElement("article");
         messageArticle.classList.add("message");
+        if (data.id) {
+            messageArticle.dataset.messageId = data.id;
+        }
 
         const isCurrentUser = Number(data.sender_id) === Number(userId);
         messageArticle.classList.add(isCurrentUser ? "you" : "other");
@@ -78,7 +138,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const bubble = document.createElement("div");
         bubble.className = "message-bubble";
-        bubble.textContent = data.content || "";
+
+        if (data.image_url) {
+            const imageLink = document.createElement("a");
+            imageLink.className = "message-image-link";
+            imageLink.href = data.image_url;
+            imageLink.target = "_blank";
+            imageLink.rel = "noopener noreferrer";
+
+            const image = document.createElement("img");
+            image.className = "message-image";
+            image.src = data.image_url;
+            image.alt = data.image_name || "Shared chat image";
+            imageLink.appendChild(image);
+            bubble.appendChild(imageLink);
+        }
+
+        if (data.content) {
+            const messageText = document.createElement("div");
+            messageText.className = "message-text";
+            messageText.textContent = data.content;
+            bubble.appendChild(messageText);
+        }
 
         const meta = document.createElement("div");
         meta.className = "message-meta";
@@ -100,7 +181,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         removeEmptyState();
-        messagesContainer.appendChild(buildMessageElement(data));
+        const messageElement = buildMessageElement(data);
+        if (!messageElement) {
+            return;
+        }
+
+        messagesContainer.appendChild(messageElement);
         showError("");
         scrollToBottom();
     };
@@ -122,12 +208,81 @@ document.addEventListener("DOMContentLoaded", () => {
     setComposerEnabled(false);
     scrollToBottom();
 
+    chatInput.addEventListener("input", () => {
+        updateSendAvailability();
+    });
+
+    chatImageButton.addEventListener("click", () => {
+        if (!chatImageButton.disabled) {
+            chatImageInput.click();
+        }
+    });
+
+    chatImageInput.addEventListener("change", () => {
+        updateImagePreview();
+        showError("");
+    });
+
+    chatImageClear.addEventListener("click", () => {
+        clearSelectedImage();
+        chatInput.focus();
+    });
+
     chatForm.addEventListener("submit", (e) => {
         e.preventDefault();
         const message = chatInput.value.trim();
-        if (message === "") return;
+        const imageFile = selectedImageFile();
+        if (message === "" && !imageFile) return;
         if (chatSocket.readyState !== WebSocket.OPEN) {
             showError("Chat is still connecting. Please wait a moment and try again.");
+            return;
+        }
+
+        if (imageFile) {
+            const payload = new FormData();
+            payload.append("content", message);
+            payload.append("image", imageFile);
+
+            chatSend.disabled = true;
+            fetch(uploadUrl, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": csrfTokenInput.value,
+                },
+                body: payload,
+            })
+                .then(async (response) => {
+                    const rawBody = await response.text();
+                    let data = {};
+                    try {
+                        data = rawBody ? JSON.parse(rawBody) : {};
+                    } catch (error) {
+                        data = {};
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(data.error || "Unable to upload image.");
+                    }
+                    return data;
+                })
+                .then((data) => {
+                    removeEmptyState();
+                    const messageElement = buildMessageElement(data);
+                    if (messageElement) {
+                        messagesContainer.appendChild(messageElement);
+                        scrollToBottom();
+                    }
+                    chatInput.value = "";
+                    clearSelectedImage();
+                    showError("");
+                    chatInput.focus();
+                })
+                .catch((error) => {
+                    showError(error.message || "Unable to upload image.");
+                })
+                .finally(() => {
+                    updateSendAvailability();
+                });
             return;
         }
 
@@ -136,6 +291,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }));
         chatInput.value = "";
         showError("");
+        updateSendAvailability();
         chatInput.focus();
     });
 });

@@ -10,6 +10,11 @@ from home.context_processors import unread_notifications_count
 from home.models import Booking, BookingAcceptanceNotification, Property
 
 User = get_user_model()
+PNG_BYTES = (
+    b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
+    b"\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDAT\x08\xd7c\xf8\xff"
+    b"\xff?\x00\x05\xfe\x02\xfeA\xdd\x94\x9b\x00\x00\x00\x00IEND\xaeB`\x82"
+)
 
 
 class BookingChatAccessTests(TestCase):
@@ -204,6 +209,118 @@ class ChatMessageServiceTests(TestCase):
         self.assertEqual(payload["content"], "Hello owner")
         self.assertEqual(ChatMessage.objects.count(), 1)
 
+    def test_create_chat_message_allows_image_only_for_accepted_participants(self):
+        booking = Booking.objects.create(
+            property=self.property,
+            booked_by=self.tenant,
+            owner=self.owner,
+            status=Booking.Status.ACCEPTED,
+            is_accepted=True,
+        )
+
+        payload = create_chat_message_for_user(
+            booking_id=booking.id,
+            user_id=self.tenant.id,
+            image_file=SimpleUploadedFile(
+                "chat.png",
+                PNG_BYTES,
+                content_type="image/png",
+            ),
+        )
+
+        self.assertIsNotNone(payload)
+        self.assertTrue(payload["has_image"])
+        self.assertTrue(payload["image_url"])
+        self.assertEqual(payload["preview"], "Photo")
+        self.assertEqual(ChatMessage.objects.count(), 1)
+
+
+class ChatImageUploadTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(username="owner", password="testpass123")
+        self.tenant = User.objects.create_user(username="tenant", password="testpass123")
+        self.outsider = User.objects.create_user(username="outsider", password="testpass123")
+        self.property = Property.objects.create(
+            user=self.owner,
+            title="Lake View Home",
+            description="Image upload chat test property.",
+            price="35000.00",
+            location="Pokhara",
+            property_type="rent",
+            image=SimpleUploadedFile(
+                "property.jpg",
+                b"fake-image-bytes",
+                content_type="image/jpeg",
+            ),
+        )
+        self.booking = Booking.objects.create(
+            property=self.property,
+            booked_by=self.tenant,
+            owner=self.owner,
+            status=Booking.Status.ACCEPTED,
+            is_accepted=True,
+        )
+
+    def test_upload_chat_image_creates_chat_message(self):
+        self.client.login(username="tenant", password="testpass123")
+
+        response = self.client.post(
+            reverse("chat_upload_image", args=[self.booking.id]),
+            {
+                "content": "See this photo",
+                "image": SimpleUploadedFile(
+                    "chat.png",
+                    PNG_BYTES,
+                    content_type="image/png",
+                ),
+            },
+        )
+
+        payload = response.json()
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(payload["content"], "See this photo")
+        self.assertTrue(payload["has_image"])
+        self.assertTrue(payload["image_url"])
+        self.assertEqual(ChatMessage.objects.count(), 1)
+
+    def test_upload_chat_image_rejects_invalid_file_type(self):
+        self.client.login(username="tenant", password="testpass123")
+
+        response = self.client.post(
+            reverse("chat_upload_image", args=[self.booking.id]),
+            {
+                "image": SimpleUploadedFile(
+                    "notes.txt",
+                    b"plain-text",
+                    content_type="text/plain",
+                ),
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["error"],
+            "Only JPG, PNG, GIF, and WEBP images are allowed.",
+        )
+        self.assertFalse(ChatMessage.objects.exists())
+
+    def test_upload_chat_image_blocks_unrelated_users(self):
+        self.client.login(username="outsider", password="testpass123")
+
+        response = self.client.post(
+            reverse("chat_upload_image", args=[self.booking.id]),
+            {
+                "image": SimpleUploadedFile(
+                    "chat.png",
+                    PNG_BYTES,
+                    content_type="image/png",
+                ),
+            },
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(ChatMessage.objects.exists())
+
 
 class ChatUnreadStateTests(TestCase):
     def setUp(self):
@@ -264,3 +381,21 @@ class ChatUnreadStateTests(TestCase):
         message.refresh_from_db()
         self.assertEqual(response.status_code, 200)
         self.assertTrue(message.is_read)
+
+    def test_context_processor_uses_photo_preview_for_image_only_messages(self):
+        ChatMessage.objects.create(
+            booking=self.booking,
+            sender=self.owner,
+            image=SimpleUploadedFile(
+                "chat.png",
+                PNG_BYTES,
+                content_type="image/png",
+            ),
+        )
+
+        request = self.factory.get("/")
+        request.user = self.tenant
+
+        context = unread_notifications_count(request)
+
+        self.assertEqual(context["recent_chats"][0]["preview"], "Photo")

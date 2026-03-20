@@ -8,11 +8,34 @@
   Responsive: Mobile-friendly with hamburger menu toggle on small screens
 -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
 <!-- Meta tags and page meta information -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  (function () {
+    const storageKey = "gharsetu-theme";
+    const root = document.documentElement;
+    let theme = "light";
+
+    try {
+      const savedTheme = localStorage.getItem(storageKey);
+      if (savedTheme === "light" || savedTheme === "dark") {
+        theme = savedTheme;
+      } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        theme = "dark";
+      }
+    } catch (error) {
+      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        theme = "dark";
+      }
+    }
+
+    root.setAttribute("data-bs-theme", theme);
+  }());
+</script>
 
 <!-- Dynamic page title block - overridden by child templates -->
 <title>{% block title %}Ghar Setu{% endblock %}</title>
@@ -35,11 +58,11 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 {% block extra_head %}{% endblock %}
 </head>
 
-<body class="bg-light d-flex flex-column min-vh-100">
+<body class="site-shell d-flex flex-column min-vh-100">
 
 {% block header %}
 <!-- NAVIGATION BAR: Fixed top navbar with site branding, main navigation, and user controls -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom fixed-top">
+<nav class="navbar navbar-expand-lg border-bottom fixed-top site-navbar">
 <div class="container">
 
   <!-- Brand/Logo: Links to homepage -->
@@ -86,6 +109,18 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
     <!-- Right-aligned navbar items: Notifications (for authenticated users) and User menu -->
     <ul class="navbar-nav ms-auto align-items-center">
+
+      <li class="nav-item me-2">
+        <button
+          type="button"
+          id="theme-toggle"
+          class="btn btn-sm site-theme-toggle"
+          aria-label="Toggle dark mode"
+          aria-pressed="false">
+          <i id="theme-toggle-icon" class="fas fa-moon"></i>
+          <span id="theme-toggle-label">Dark</span>
+        </button>
+      </li>
 
       {% if request.user.is_authenticated %}
 
@@ -338,7 +373,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
 {% block footer %}
 <!-- FOOTER: Site footer with links, company info, and contact details -->
-<footer class="bg-white border-top mt-5">
+<footer class="site-footer border-top mt-5">
 
 <div class="container py-5">
 
@@ -449,6 +484,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
 <!-- Bootstrap 5 JavaScript bundle for interactive components (modals, dropdowns, etc.) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/theme_toggle.js' %}"></script>
 
 <!-- Block for page-specific JavaScript (filled by child templates) -->
 {% block extra_scripts %}{% endblock %}

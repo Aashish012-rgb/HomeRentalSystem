@@ -51,7 +51,10 @@
 
         <div id="messages" class="chat-history" aria-live="polite">
           {% for message in chat_messages %}
-            <article class="message {% if message.sender.id == user_id %}you{% else %}other{% endif %}">
+            <article
+              class="message {% if message.sender.id == user_id %}you{% else %}other{% endif %}"
+              data-message-id="{{ message.id }}"
+            >
               {% if message.sender.id != user_id %}
                 <div class="message-avatar">
                   {{ message.sender.username|first|upper }}
@@ -62,7 +65,20 @@
                 <div class="message-author">
                   {% if message.sender.id == user_id %}You{% else %}{{ message.sender.username }}{% endif %}
                 </div>
-                <div class="message-bubble">{{ message.content|linebreaksbr }}</div>
+                <div class="message-bubble">
+                  {% if message.image %}
+                    <a href="{{ message.image.url }}" class="message-image-link" target="_blank" rel="noopener noreferrer">
+                      <img
+                        src="{{ message.image.url }}"
+                        alt="Shared chat image"
+                        class="message-image"
+                      >
+                    </a>
+                  {% endif %}
+                  {% if message.content %}
+                    <div class="message-text">{{ message.content|linebreaksbr }}</div>
+                  {% endif %}
+                </div>
                 <div class="message-meta">{{ message.created_at|date:"M d, H:i" }}</div>
               </div>
             </article>
@@ -81,7 +97,17 @@
 
         <footer class="chat-composer">
           <form id="chat-form" class="chat-form">
+            {% csrf_token %}
             <label class="visually-hidden" for="chat-input">Message</label>
+            <input
+              type="file"
+              id="chat-image-input"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              hidden
+            >
+            <button type="button" id="chat-image-button" class="chat-attach-button" aria-label="Attach image">
+              <i class="fas fa-image"></i>
+            </button>
             <div class="chat-form__input-wrap">
               <i class="fas fa-pen chat-form__input-icon" aria-hidden="true"></i>
               <input
@@ -91,6 +117,12 @@
                 autocomplete="off"
                 maxlength="1000"
               >
+            </div>
+            <div id="chat-image-preview" class="chat-image-preview" hidden>
+              <span id="chat-image-name" class="chat-image-preview__name"></span>
+              <button type="button" id="chat-image-clear" class="chat-image-preview__clear" aria-label="Remove selected image">
+                <i class="fas fa-xmark"></i>
+              </button>
             </div>
             <button type="submit" id="chat-send" class="chat-send-button">
               <i class="fas fa-paper-plane"></i>
@@ -106,7 +138,8 @@
 <script>
   const chatBootstrap = {
     bookingId: "{{ booking.id }}",
-    userId: "{{ user_id }}"
+    userId: "{{ user_id }}",
+    uploadUrl: "{% url 'chat_upload_image' booking.id %}"
   };
 </script>
 <script src="{% static 'js/chat_room.js' %}"></script>

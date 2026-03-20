@@ -12,6 +12,8 @@ from .models import (
 from django.db.models import Q
 from django.urls import reverse
 
+from chat.services import image_message_preview
+
 NOTIFICATION_META = {
     "booking_request": {
         "accent": "primary",
@@ -173,7 +175,7 @@ def unread_notifications_count(request):
                 "url": reverse("chat_room", args=[item.booking_id]),
                 "counterpart_name": counterpart.username,
                 "property_title": item.booking.property.title,
-                "preview": item.content,
+                "preview": item.content or (image_message_preview() if item.image else ""),
                 "created_at": item.created_at,
                 "is_unread": item.sender_id != request.user.id and not item.is_read,
             }
