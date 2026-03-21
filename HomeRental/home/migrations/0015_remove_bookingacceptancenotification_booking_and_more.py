@@ -49,10 +49,10 @@ class Migration(migrations.Migration):
         ),
         migrations.RunSQL(
             sql=[
-                'DROP TABLE IF EXISTS "chat_chatmessage";',
-                'DROP TABLE IF EXISTS "chat_message";',
-                'DROP TABLE IF EXISTS "chat_chat_participants";',
-                'DROP TABLE IF EXISTS "chat_chat";',
+                "DROP TABLE IF EXISTS chat_chatmessage;",
+                "DROP TABLE IF EXISTS chat_message;",
+                "DROP TABLE IF EXISTS chat_chat_participants;",
+                "DROP TABLE IF EXISTS chat_chat;",
             ],
             reverse_sql=migrations.RunSQL.noop,
         ),
