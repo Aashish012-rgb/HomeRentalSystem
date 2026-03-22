@@ -114,14 +114,33 @@ else:
 
 
 # ===== DATABASE CONFIGURATION =====
-# SQLite database configuration (suitable for development)
-# Change to PostgreSQL or MySQL for production
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',  # SQLite database engine
-        'NAME': BASE_DIR / 'db.sqlite3',  # Database file location
+# Use SQLite for local development by default.
+# Switch to MySQL by setting DB_ENGINE=mysql (or DB_NAME) plus DB_* variables.
+DB_ENGINE = os.environ.get("DB_ENGINE", "").strip().lower()
+DB_NAME = os.environ.get("DB_NAME", "").strip()
+
+if DB_ENGINE in {"mysql", "django.db.backends.mysql"} or DB_NAME:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": DB_NAME or "home_rental",
+            "USER": os.environ.get("DB_USER", "root"),
+            "PASSWORD": os.environ.get("DB_PASSWORD", ""),
+            "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
+            "PORT": os.environ.get("DB_PORT", "3306"),
+            "OPTIONS": {
+                "charset": "utf8mb4",
+            },
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+
 
 
 # ===== PASSWORD VALIDATION =====

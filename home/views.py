@@ -55,24 +55,28 @@ def about(request):
             'name': 'Aashish Kumar Shah',
             'role': 'Leader',
             'bio': 'Student of Bsc.(HONS) Computing',
+            'image': '/media/profile_images/aashish.jpeg',
             'icon': ''
         },
         {
             'name': 'Abhishek Koirala',
             'role': 'Member',
             'bio': 'Student of Bsc.(HONS) Computing',
+            'image': '/media/profile_images/abhishek.jpeg',
             'icon': 'fa-computer'
         },
         {
             'name': 'Anushka Sangroula',
             'role': 'Member',
             'bio': 'Student of Bsc.(HONS) Computing',
+            'image': '/media/profile_images/anushka.jpeg',
             'icon': 'fa-cogs'
         },
         {
             'name': 'Hirdaya Shiwakoti',
             'role': 'Member',
             'bio': 'Student of Bsc.(HONS) Computing',
+            'image': '/media/profile_images/hirdaya.jpg',
             'icon': 'fa-headset'
         },
     ]
