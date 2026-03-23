@@ -1,64 +1,538 @@
-{% extends "layout.html" %}
+{% extends "layout_minimal.html" %}
 
 {% block title %}Sign In | HomeRental{% endblock %}
 
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --login-bg-1: #f4f7fb;
+    --login-bg-2: #ecf2fa;
+    --login-card-bg: rgba(255, 255, 255, 0.84);
+    --login-card-border: rgba(255, 255, 255, 0.6);
+    --login-brand-start: #0d6efd;
+    --login-brand-end: #20c997;
+    --login-brand-highlight: rgba(255, 255, 255, 0.2);
+    --login-input-bg: #f7f9fc;
+    --login-input-border: #d5deee;
+    --login-copy: #24324b;
+    --login-muted: #63728c;
+    --login-primary: #0d6efd;
+    --login-primary-hover: #0b5ed7;
+    --login-primary-accent: #20a4ff;
+    --login-shadow: 0 32px 80px rgba(24, 39, 75, 0.18);
+  }
+
+  [data-bs-theme="dark"] {
+    --login-bg-1: #0f1726;
+    --login-bg-2: #162336;
+    --login-card-bg: rgba(20, 30, 48, 0.86);
+    --login-card-border: rgba(148, 163, 184, 0.24);
+    --login-brand-start: #3b82f6;
+    --login-brand-end: #14b8a6;
+    --login-brand-highlight: rgba(255, 255, 255, 0.16);
+    --login-input-bg: rgba(17, 24, 39, 0.88);
+    --login-input-border: rgba(148, 163, 184, 0.35);
+    --login-copy: #e6edf9;
+    --login-muted: #a9b7cf;
+    --login-primary: #60a5fa;
+    --login-primary-hover: #3b82f6;
+    --login-primary-accent: #22d3ee;
+    --login-shadow: 0 35px 85px rgba(0, 0, 0, 0.45);
+  }
+
+  .login-shell {
+    position: relative;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 10% 20%, rgba(14, 165, 233, 0.18), transparent 36%),
+      radial-gradient(circle at 88% 12%, rgba(32, 201, 151, 0.2), transparent 34%),
+      linear-gradient(145deg, var(--login-bg-1), var(--login-bg-2));
+    font-family: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+    color: var(--login-copy);
+    overflow: hidden;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .login-shell::before,
+  .login-shell::after {
+    content: "";
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(2px);
+    pointer-events: none;
+  }
+
+  .login-shell::before {
+    width: 340px;
+    height: 340px;
+    background: rgba(14, 165, 233, 0.16);
+    top: -110px;
+    right: -110px;
+  }
+
+  .login-shell::after {
+    width: 260px;
+    height: 260px;
+    background: rgba(45, 186, 136, 0.2);
+    bottom: -120px;
+    left: -120px;
+  }
+
+  .login-stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.08fr 1fr;
+    max-width: 1040px;
+    min-height: 640px;
+    border-radius: 28px;
+    overflow: hidden;
+    background: var(--login-card-bg);
+    border: 1px solid var(--login-card-border);
+    box-shadow: var(--login-shadow);
+    backdrop-filter: blur(8px);
+    animation: loginEntrance 550ms ease-out both;
+  }
+
+  .login-brand-panel {
+    position: relative;
+    padding: 2.6rem;
+    background: linear-gradient(155deg, var(--login-brand-start), var(--login-brand-end));
+    color: #ffffff;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .login-brand-panel::before,
+  .login-brand-panel::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    background: var(--login-brand-highlight);
+    z-index: -1;
+  }
+
+  .login-brand-panel::before {
+    width: 320px;
+    height: 320px;
+    top: -170px;
+    right: -120px;
+  }
+
+  .login-brand-panel::after {
+    width: 260px;
+    height: 260px;
+    bottom: -120px;
+    left: -120px;
+  }
+
+  .login-logo {
+    width: 54px;
+    height: 54px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    margin-bottom: 1.2rem;
+    font-size: 1.2rem;
+  }
+
+  .login-brand-title {
+    font-size: clamp(1.9rem, 3.5vw, 2.45rem);
+    line-height: 1.18;
+    margin-bottom: 0.8rem;
+    letter-spacing: -0.02em;
+    font-weight: 800;
+  }
+
+  .login-brand-copy {
+    margin-bottom: 2.2rem;
+    max-width: 28ch;
+    color: rgba(255, 255, 255, 0.92);
+    line-height: 1.55;
+  }
+
+  .login-feature-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .login-feature-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.98);
+  }
+
+  .login-feature-list i {
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    font-size: 0.82rem;
+  }
+
+  .login-form-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.4rem 2.1rem;
+  }
+
+  .login-form-wrap {
+    width: min(430px, 100%);
+    animation: loginFadeIn 650ms ease-out both;
+    animation-delay: 140ms;
+  }
+
+  .login-home-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+    text-decoration: none;
+    color: var(--login-muted);
+    margin-bottom: 1.3rem;
+    font-weight: 600;
+    transition: color 0.2s ease;
+  }
+
+  .login-home-link:hover {
+    color: var(--login-primary);
+  }
+
+  .login-heading {
+    font-size: clamp(1.7rem, 3vw, 2.2rem);
+    font-weight: 800;
+    margin: 0 0 0.35rem;
+    letter-spacing: -0.02em;
+  }
+
+  .login-subheading {
+    color: var(--login-muted);
+    margin-bottom: 1.8rem;
+    line-height: 1.55;
+  }
+
+  .login-alert {
+    border: 0;
+    border-radius: 14px;
+    background: rgba(220, 53, 69, 0.12);
+    color: #b4232f;
+    padding: 0.8rem 0.95rem;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  [data-bs-theme="dark"] .login-alert {
+    background: rgba(248, 113, 113, 0.18);
+    color: #fecaca;
+  }
+
+  .field-group {
+    margin-bottom: 1rem;
+  }
+
+  .field-label {
+    display: block;
+    margin-bottom: 0.45rem;
+    font-weight: 700;
+    color: var(--login-copy);
+    font-size: 0.92rem;
+  }
+
+  .field-control {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    border-radius: 14px;
+    border: 1px solid var(--login-input-border);
+    background: var(--login-input-bg);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    padding: 0.15rem 0.85rem;
+  }
+
+  .field-control:focus-within {
+    border-color: var(--login-primary);
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.14);
+  }
+
+  .field-control i {
+    color: var(--login-muted);
+    font-size: 0.9rem;
+    width: 16px;
+  }
+
+  .field-control input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--login-copy);
+    padding: 0.66rem 0;
+    font-size: 0.96rem;
+    font-weight: 500;
+  }
+
+  .field-control input::placeholder {
+    color: rgba(99, 114, 140, 0.8);
+    font-weight: 500;
+  }
+
+  [data-bs-theme="dark"] .field-control input::placeholder {
+    color: rgba(169, 183, 207, 0.82);
+  }
+
+  .field-error {
+    margin: 0.35rem 0 0;
+    font-size: 0.82rem;
+    color: #be123c;
+    font-weight: 600;
+  }
+
+  .login-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.9rem;
+    margin-top: 0.4rem;
+    margin-bottom: 1.35rem;
+  }
+
+  .login-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--login-muted);
+    font-size: 0.88rem;
+  }
+
+  .login-check input {
+    accent-color: var(--login-primary);
+    width: 15px;
+    height: 15px;
+  }
+
+  .login-link {
+    color: var(--login-primary);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 700;
+    transition: color 0.2s ease;
+  }
+
+  .login-link:hover {
+    color: var(--login-primary-hover);
+  }
+
+  .login-submit {
+    width: 100%;
+    border: 0;
+    border-radius: 14px;
+    padding: 0.84rem 1rem;
+    background: linear-gradient(135deg, var(--login-primary), var(--login-primary-accent));
+    color: #ffffff;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    box-shadow: 0 16px 28px rgba(13, 110, 253, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  }
+
+  .login-submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 20px 30px rgba(13, 110, 253, 0.34);
+    filter: brightness(1.02);
+  }
+
+  .login-submit:active {
+    transform: translateY(0);
+  }
+
+  .login-register {
+    text-align: center;
+    color: var(--login-muted);
+    font-size: 0.92rem;
+    margin: 1.2rem 0 0;
+  }
+
+  @keyframes loginEntrance {
+    from {
+      transform: translateY(16px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes loginFadeIn {
+    from {
+      transform: translateY(10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 991.98px) {
+    .login-stage {
+      grid-template-columns: 1fr;
+      min-height: auto;
+      max-width: 640px;
+    }
+
+    .login-brand-panel {
+      padding: 2rem 1.8rem 1.8rem;
+    }
+
+    .login-brand-copy {
+      margin-bottom: 1.35rem;
+    }
+  }
+
+  @media (max-width: 575.98px) {
+    .login-shell {
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+    }
+
+    .login-stage {
+      border-radius: 20px;
+    }
+
+    .login-brand-panel,
+    .login-form-panel {
+      padding-left: 1.25rem;
+      padding-right: 1.25rem;
+    }
+
+    .login-brand-panel {
+      padding-top: 1.55rem;
+      padding-bottom: 1.4rem;
+    }
+
+    .login-form-panel {
+      padding-top: 1.7rem;
+      padding-bottom: 1.5rem;
+    }
+
+    .login-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<section class="container py-4 py-lg-5">
-  <div class="row justify-content-center">
-    <div class="col-12 col-md-8 col-lg-5">
-      <div class="card shadow-sm">
-        <div class="card-body p-4 p-lg-5">
-          <div class="d-flex justify-content-center mb-3">
-            <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center" style="width: 72px; height: 72px;" aria-label="Profile image placeholder">
-              <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="8" r="3.4"></circle>
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"></path>
-              </svg>
-            </div>
+<section class="login-shell">
+  <div class="container">
+    <div class="login-stage mx-auto">
+      <aside class="login-brand-panel">
+        <span class="login-logo">
+          <i class="fas fa-house"></i>
+        </span>
+        <h1 class="login-brand-title">Find your next home, faster.</h1>
+        <p class="login-brand-copy">
+          Sign in to manage bookings, chat with verified owners, and keep every rental detail in one secure place.
+        </p>
+        <ul class="login-feature-list">
+          <li><i class="fas fa-shield-alt"></i>Verified user accounts</li>
+          <li><i class="fas fa-comment-dots"></i>Instant owner messaging</li>
+          <li><i class="fas fa-bell"></i>Real-time booking updates</li>
+        </ul>
+      </aside>
+
+      <div class="login-form-panel">
+        <div class="login-form-wrap">
+          <a href="{% url 'home_list' %}" class="login-home-link">
+            <i class="fas fa-arrow-left"></i>
+            Back to homepage
+          </a>
+
+          <h2 class="login-heading">Welcome back</h2>
+          <p class="login-subheading">Please enter your account details to continue.</p>
+
+          {% if form.non_field_errors %}
+          <div class="login-alert" role="alert">
+            {% for error in form.non_field_errors %}
+            <div>{{ error }}</div>
+            {% endfor %}
           </div>
-          <div class="text-center mb-4">
-            <h1 class="h3 mb-0"><i class="fas fa-sign-in-alt me-2 text-primary"></i>Sign In</h1>
-          </div>
+          {% endif %}
 
           <form method="post" novalidate>
             {% csrf_token %}
-
-            {% if form.non_field_errors %}
-            <div class="alert alert-danger" role="alert">
-              {% for error in form.non_field_errors %}
-              <div>{{ error }}</div>
-              {% endfor %}
-            </div>
+            {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
             {% endif %}
 
-            <div class="mb-3">
-              <label for="id_username" class="form-label">Username</label>
-              {{ form.username }}
-              {% for error in form.username.errors %}
-              <div class="text-danger small mt-1">{{ error }}</div>
-              {% endfor %}
-            </div>
-
-            <div class="mb-3">
-              <label for="id_password" class="form-label">Password</label>
-              {{ form.password }}
-              {% for error in form.password.errors %}
-              <div class="text-danger small mt-1">{{ error }}</div>
-              {% endfor %}
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center mb-4">
-              <div class="form-check mb-0">
-                <input class="form-check-input" type="checkbox" name="remember_me" id="rememberMe">
-                <label class="form-check-label" for="rememberMe">Remember me</label>
+            <div class="field-group">
+              <label class="field-label" for="id_username">Username</label>
+              <div class="field-control">
+                <i class="fas fa-user"></i>
+                <input
+                  type="text"
+                  id="id_username"
+                  name="username"
+                  value="{{ form.username.value|default_if_none:'' }}"
+                  placeholder="Enter your username"
+                  autocomplete="username"
+                  required>
               </div>
-              <a href="{% url 'password_reset' %}" class="small">Forgot Password?</a>
+              {% for error in form.username.errors %}
+              <p class="field-error">{{ error }}</p>
+              {% endfor %}
             </div>
 
-            <button type="submit" class="btn btn-primary w-100">Sign In</button>
+            <div class="field-group">
+              <label class="field-label" for="id_password">Password</label>
+              <div class="field-control">
+                <i class="fas fa-lock"></i>
+                <input
+                  type="password"
+                  id="id_password"
+                  name="password"
+                  placeholder="Enter your password"
+                  autocomplete="current-password"
+                  required>
+              </div>
+              {% for error in form.password.errors %}
+              <p class="field-error">{{ error }}</p>
+              {% endfor %}
+            </div>
 
-            <p class="text-center mt-3 mb-0 small">Don't have an account? <a href="{% url 'register' %}">Register</a></p>
+            <div class="login-row">
+              <label class="login-check" for="rememberMe">
+                <input type="checkbox" name="remember_me" id="rememberMe">
+                Remember me
+              </label>
+              <a href="{% url 'password_reset' %}" class="login-link">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="login-submit">Sign In</button>
           </form>
+
+          <p class="login-register">
+            Don't have an account?
+            <a href="{% url 'register' %}" class="login-link">Create one</a>
+          </p>
         </div>
       </div>
     </div>

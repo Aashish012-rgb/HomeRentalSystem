@@ -154,7 +154,7 @@ def index(request):
     Display homepage with latest testimonials.
     Shows 6 most recent testimonials from users to showcase platform credibility.
     """
-    testimonials = Testimonial.objects.select_related("user").order_by("-created_at")[:6]
+    testimonials = Testimonial.objects.select_related("user", "user__profile").order_by("-created_at")[:6]
     return render(
         request,
         "index.html",
@@ -186,7 +186,7 @@ def reviews(request):
         testimonial_form = TestimonialForm()
 
     # Display all testimonials sorted by most recent
-    testimonials = Testimonial.objects.select_related("user").order_by("-created_at")
+    testimonials = Testimonial.objects.select_related("user", "user__profile").order_by("-created_at")
     return render(
         request,
         "reviews.html",

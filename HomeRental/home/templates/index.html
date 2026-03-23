@@ -263,20 +263,56 @@ Ghar Setu
     padding-bottom: 1rem;
   }
 
+  .testimonials-title {
+    color: #0b6667;
+    font-size: clamp(1.85rem, 3.2vw, 2.65rem);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .testimonials-subtitle {
+    color: #5d6f7d;
+    font-size: 1.02rem;
+  }
+
   .testimonial-card {
     height: 100%;
-    border-radius: 1rem;
+    border-radius: 0.9rem;
     background: #ffffff;
-    border: 1px solid #dfe5ef;
-    box-shadow: 0 8px 22px rgba(16, 28, 44, 0.08);
-    padding: 1.25rem;
+    border: 1px solid #cdd4da;
+    box-shadow: 0 10px 24px rgba(16, 27, 41, 0.1);
+    padding: 1.65rem 1.35rem 1.5rem;
+    text-align: center;
     transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
   }
 
   .testimonial-card:hover {
-    transform: translateY(-6px);
-    border-color: #cbd6ea;
-    box-shadow: 0 14px 30px rgba(16, 28, 44, 0.14);
+    transform: translateY(-5px);
+    border-color: #c2ccd4;
+    box-shadow: 0 16px 30px rgba(16, 27, 41, 0.14);
+  }
+
+  .testimonial-avatar {
+    width: 112px;
+    height: 112px;
+    border-radius: 999px;
+    margin: 0 auto 1.1rem;
+    border: 4px solid #0b6c68;
+    background: linear-gradient(160deg, #1a8f8a, #0c6d68);
+    display: grid;
+    place-items: center;
+    color: #ffffff;
+    font-size: 2.1rem;
+    font-weight: 800;
+    line-height: 1;
+    overflow: hidden;
+  }
+
+  .testimonial-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   .testimonial-form-wrap {
@@ -295,21 +331,25 @@ Ghar Setu
   }
 
   .testimonial-text {
-    color: #344559;
+    color: #182535;
+    font-size: 1.02rem;
     line-height: 1.6;
-    margin-bottom: 1rem;
+    margin: 0;
   }
 
   .testimonial-user {
-    margin: 0;
+    margin: 0 0 0.55rem;
     font-weight: 700;
-    color: #142033;
+    color: #055f60;
+    font-size: clamp(1.3rem, 2vw, 1.85rem);
   }
 
   .testimonial-meta {
-    margin: 0;
-    color: #6b7a8d;
-    font-size: 0.92rem;
+    margin: 0 0 0.7rem;
+    color: #67798b;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
   }
 
   .testimonial-empty {
@@ -322,8 +362,10 @@ Ghar Setu
   }
 
   .testimonial-rating {
-    margin-bottom: 0.6rem;
-    color: #f4b400;
+    margin-bottom: 1rem;
+    color: #b88703;
+    font-size: 1.08rem;
+    letter-spacing: 0.08rem;
   }
 
   .testimonial-form-wrap .text-muted {
@@ -356,13 +398,26 @@ Ghar Setu
 
   [data-bs-theme="dark"] .testimonial-card {
     background: linear-gradient(135deg, #16202b 0%, #223346 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 8px 22px rgba(16, 28, 44, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 10px 24px rgba(7, 13, 20, 0.35);
   }
 
   [data-bs-theme="dark"] .testimonial-card:hover {
-    border-color: rgba(255, 255, 255, 0.18);
-    box-shadow: 0 14px 30px rgba(9, 16, 24, 0.24);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 16px 30px rgba(5, 10, 16, 0.48);
+  }
+
+  [data-bs-theme="dark"] .testimonials-title {
+    color: #7ad2cb;
+  }
+
+  [data-bs-theme="dark"] .testimonials-subtitle {
+    color: rgba(232, 239, 250, 0.75);
+  }
+
+  [data-bs-theme="dark"] .testimonial-avatar {
+    border-color: #5cb9b2;
+    background: linear-gradient(160deg, #2a8f88, #145b57);
   }
 
   [data-bs-theme="dark"] .testimonial-form-wrap {
@@ -373,15 +428,15 @@ Ghar Setu
   }
 
   [data-bs-theme="dark"] .testimonial-text {
-    color: rgba(247, 251, 255, 0.82);
+    color: rgba(245, 249, 255, 0.86);
   }
 
   [data-bs-theme="dark"] .testimonial-user {
-    color: #f7fbff;
+    color: #a8ece7;
   }
 
   [data-bs-theme="dark"] .testimonial-meta {
-    color: rgba(247, 251, 255, 0.68);
+    color: rgba(232, 239, 250, 0.7);
   }
 
   [data-bs-theme="dark"] .testimonial-empty {
@@ -608,8 +663,8 @@ Ghar Setu
 <section class="container testimonials">
   <!-- Section header with title and description -->
   <div class="text-center mb-4 mb-lg-5 reveal">
-    <h2 class="fw-bold mb-2">Ratings & Reviews</h2>
-    <p class="text-muted mb-0">What renters and owners say about using our platform.</p>
+    <h2 class="fw-bold mb-2 testimonials-title">What Our Customers Say</h2>
+    <p class="mb-0 testimonials-subtitle">What renters and owners say about using our platform.</p>
   </div>
   
   <!-- Call-to-action box: Encourage user reviews -->
@@ -626,6 +681,20 @@ Ghar Setu
       <!-- Individual testimonial card with rating stars -->
       <div class="col-12 col-md-6 col-lg-4">
         <article class="testimonial-card reveal">
+          <div class="testimonial-avatar" aria-hidden="true">
+            {% if testimonial.user.profile.image %}
+              <img src="{{ testimonial.user.profile.image.url }}" alt="{{ testimonial.user.username }} profile photo" loading="lazy">
+            {% else %}
+              <span>{{ testimonial.user.username|slice:":1"|upper }}</span>
+            {% endif %}
+          </div>
+
+          <!-- Author name -->
+          <p class="testimonial-user">{{ testimonial.user.get_full_name|default:testimonial.user.username }}</p>
+
+          <!-- User role (e.g., "Tenant", "Property Owner") -->
+          <p class="testimonial-meta">{{ testimonial.get_role_display }}</p>
+
           <!-- Star rating display: Shows 1-5 filled/empty stars based on testimonial.rating -->
           <div class="testimonial-rating" aria-label="{{ testimonial.rating }} out of 5 stars">
             <!-- Star 1 -->
@@ -642,12 +711,6 @@ Ghar Setu
           
           <!-- Testimonial text/message content -->
           <p class="testimonial-text mb-3">{{ testimonial.message }}</p>
-          
-          <!-- Author username -->
-          <p class="testimonial-user">{{ testimonial.user.username }}</p>
-          
-          <!-- User role (e.g., "Tenant", "Property Owner") -->
-          <p class="testimonial-meta">{{ testimonial.get_role_display }}</p>
         </article>
       </div>
     {% empty %}

@@ -16,24 +16,30 @@ Ratings & Reviews | Ghar Setu
 <style>
   .reviews-page {
     max-width: 1200px;
+    background: #f1f3f4;
+    border-radius: 1.5rem;
+    padding-inline: clamp(1rem, 3vw, 2.5rem);
+    padding-block: clamp(1.5rem, 3.5vw, 3rem);
   }
 
   .reviews-title {
-    font-size: clamp(2rem, 3.8vw, 3rem);
+    font-size: clamp(1.95rem, 3.9vw, 3.15rem);
     font-weight: 800;
-    color: #132137;
+    color: #0b6667;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   .reviews-subtitle {
-    color: #5f6f85;
-    font-size: 1.15rem;
+    color: #5d6f7d;
+    font-size: 1.04rem;
   }
 
   .review-form-wrap {
-    border-radius: 1.2rem;
-    border: 1px solid #d8e0ec;
+    border-radius: 1rem;
+    border: 1px solid #d2d8de;
     background: #ffffff;
-    box-shadow: 0 8px 24px rgba(14, 22, 34, 0.08);
+    box-shadow: 0 10px 24px rgba(16, 27, 41, 0.08);
     padding: clamp(1.25rem, 2.5vw, 2rem);
   }
 
@@ -44,43 +50,126 @@ Ratings & Reviews | Ghar Setu
   }
 
   .review-card {
-    border-radius: 1rem;
-    border: 1px solid #dfe5ef;
+    border-radius: 0.9rem;
+    border: 1px solid #cdd4da;
     background: #ffffff;
-    box-shadow: 0 8px 20px rgba(16, 28, 44, 0.07);
-    padding: 1.2rem;
+    box-shadow: 0 10px 24px rgba(16, 27, 41, 0.1);
+    padding: 1.65rem 1.35rem 1.5rem;
     height: 100%;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .review-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 30px rgba(16, 27, 41, 0.14);
+  }
+
+  .review-avatar {
+    width: 112px;
+    height: 112px;
+    border-radius: 999px;
+    margin: 0 auto 1.1rem;
+    border: 4px solid #0b6c68;
+    background: linear-gradient(160deg, #1a8f8a, #0c6d68);
+    display: grid;
+    place-items: center;
+    color: #ffffff;
+    font-size: 2.1rem;
+    font-weight: 800;
+    line-height: 1;
+    overflow: hidden;
+  }
+
+  .review-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   .review-stars {
-    color: #f4b400;
-    margin-bottom: 0.6rem;
+    color: #b88703;
+    margin-bottom: 1rem;
+    font-size: 1.08rem;
+    letter-spacing: 0.08rem;
   }
 
   .review-message {
-    color: #344559;
-    margin-bottom: 0.85rem;
+    color: #182535;
+    font-size: 1.02rem;
+    line-height: 1.6;
+    margin: 0;
   }
 
   .review-user {
-    margin: 0;
+    margin: 0 0 0.55rem;
     font-weight: 700;
-    color: #152136;
+    color: #055f60;
+    font-size: clamp(1.35rem, 2vw, 1.95rem);
   }
 
   .review-role {
-    margin: 0;
-    color: #6b7a8d;
-    font-size: 0.92rem;
+    margin: 0 0 0.7rem;
+    color: #67798b;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
   }
 
   .review-empty {
-    border-radius: 1rem;
+    border-radius: 0.9rem;
     border: 1px dashed #cfd9e8;
-    background: #fafcff;
-    padding: 1.2rem;
+    background: #ffffff;
+    padding: 1.25rem;
     text-align: center;
     color: #58677b;
+  }
+
+  [data-bs-theme="dark"] .reviews-page {
+    background: #101822;
+  }
+
+  [data-bs-theme="dark"] .reviews-title {
+    color: #7ad2cb;
+  }
+
+  [data-bs-theme="dark"] .reviews-subtitle {
+    color: rgba(232, 239, 250, 0.75);
+  }
+
+  [data-bs-theme="dark"] .review-form-wrap,
+  [data-bs-theme="dark"] .review-card {
+    background: linear-gradient(140deg, #192535 0%, #22354b 100%);
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 10px 24px rgba(7, 13, 20, 0.35);
+  }
+
+  [data-bs-theme="dark"] .review-card:hover {
+    box-shadow: 0 16px 30px rgba(5, 10, 16, 0.48);
+  }
+
+  [data-bs-theme="dark"] .review-avatar {
+    border-color: #5cb9b2;
+    background: linear-gradient(160deg, #2a8f88, #145b57);
+  }
+
+  [data-bs-theme="dark"] .review-user {
+    color: #a8ece7;
+  }
+
+  [data-bs-theme="dark"] .review-role {
+    color: rgba(232, 239, 250, 0.7);
+  }
+
+  [data-bs-theme="dark"] .review-message {
+    color: rgba(245, 249, 255, 0.86);
+  }
+
+  [data-bs-theme="dark"] .review-empty {
+    border-color: rgba(255, 255, 255, 0.18);
+    background: linear-gradient(140deg, #192535 0%, #22354b 100%);
+    color: rgba(245, 249, 255, 0.8);
   }
 </style>
 {% endblock %}
@@ -92,7 +181,7 @@ Ratings & Reviews | Ghar Setu
   <!-- PAGE HEADER: Title and description -->
   <div class="text-center mb-4 mb-lg-5">
     <!-- Page title -->
-    <h1 class="reviews-title mb-2">Ratings & Reviews</h1>
+    <h1 class="reviews-title mb-2">What Our Customers Say</h1>
     <!-- Page description -->
     <p class="reviews-subtitle mb-0">What renters and owners say about using our platform.</p>
   </div>
@@ -160,7 +249,20 @@ Ratings & Reviews | Ghar Setu
       <!-- Individual review card -->
       <div class="col-12 col-md-6 col-lg-4">
         <article class="review-card">
-          
+          <div class="review-avatar" aria-hidden="true">
+            {% if testimonial.user.profile.image %}
+              <img src="{{ testimonial.user.profile.image.url }}" alt="{{ testimonial.user.username }} profile photo" loading="lazy">
+            {% else %}
+              <span>{{ testimonial.user.username|slice:":1"|upper }}</span>
+            {% endif %}
+          </div>
+
+          <!-- Reviewer name -->
+          <p class="review-user">{{ testimonial.user.get_full_name|default:testimonial.user.username }}</p>
+
+          <!-- Reviewer role (Tenant or Property Owner) -->
+          <p class="review-role">{{ testimonial.get_role_display }}</p>
+
           <!-- Star rating display: Shows 1-5 filled/empty stars based on rating -->
           <div class="review-stars" aria-label="{{ testimonial.rating }} out of 5 stars">
             <!-- Star 1 -->
@@ -177,12 +279,6 @@ Ratings & Reviews | Ghar Setu
           
           <!-- Review message/content -->
           <p class="review-message">{{ testimonial.message }}</p>
-          
-          <!-- Reviewer username -->
-          <p class="review-user">{{ testimonial.user.username }}</p>
-          
-          <!-- Reviewer role (Tenant or Property Owner) -->
-          <p class="review-role">{{ testimonial.get_role_display }}</p>
         </article>
       </div>
     {% empty %}
