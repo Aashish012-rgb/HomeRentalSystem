@@ -121,17 +121,28 @@ Ghar Setu
 
   .home-services-stage {
     position: relative;
+    isolation: isolate;
+  }
+
+  .home-services-stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 1rem;
+    background: linear-gradient(180deg, rgba(14, 22, 35, 0.12) 0%, rgba(14, 22, 35, 0.4) 68%, rgba(14, 22, 35, 0.54) 100%);
+    pointer-events: none;
+    z-index: 1;
   }
 
   .service-card {
     position: relative;
     height: 100%;
     border-radius: 1.35rem;
-    background: rgba(247, 248, 250, 0.62);
-    border: 1px solid rgba(217, 222, 229, 0.72);
-    backdrop-filter: blur(3px);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(198, 210, 227, 0.92);
+    backdrop-filter: blur(5px);
     z-index: 3;
-    box-shadow: 0 8px 24px rgba(14, 22, 34, 0.08);
+    box-shadow: 0 12px 28px rgba(14, 22, 34, 0.16);
     overflow: hidden;
     transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
   }
@@ -141,8 +152,10 @@ Ghar Setu
     width: 100%;
     height: clamp(420px, 56vw, 620px);
     object-fit: cover;
+    object-position: center;
     display: block;
     box-shadow: 0 8px 22px rgba(16, 28, 44, 0.12);
+    filter: brightness(0.93) saturate(0.96);
   }
 
   .service-overlay-grid {
@@ -167,8 +180,8 @@ Ghar Setu
 
   .service-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 16px 34px rgba(14, 22, 34, 0.14);
-    border-color: #c9d5ea;
+    box-shadow: 0 18px 36px rgba(14, 22, 34, 0.2);
+    border-color: #b7c8e0;
   }
 
   .service-card:hover::before {
@@ -183,7 +196,7 @@ Ghar Setu
 
   .service-copy {
     font-size: 1.26rem;
-    color: #273446;
+    color: #243245;
     line-height: 1.55;
     min-height: 120px;
   }
@@ -203,8 +216,46 @@ Ghar Setu
     }
 
     .service-card {
-      background: rgba(247, 248, 250, 0.82);
+      background: rgba(255, 255, 255, 0.95);
     }
+  }
+
+  [data-bs-theme="dark"] .home-services-stage::after {
+    background: linear-gradient(180deg, rgba(8, 14, 23, 0.34) 0%, rgba(8, 14, 23, 0.58) 68%, rgba(8, 14, 23, 0.72) 100%);
+  }
+
+  [data-bs-theme="dark"] .service-section-banner {
+    filter: brightness(0.7) saturate(0.86);
+  }
+
+  [data-bs-theme="dark"] .service-card {
+    background: rgba(17, 28, 40, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 14px 30px rgba(6, 11, 18, 0.42);
+  }
+
+  [data-bs-theme="dark"] .service-card:hover {
+    border-color: rgba(169, 199, 255, 0.65);
+    box-shadow: 0 18px 34px rgba(4, 8, 14, 0.55);
+  }
+
+  [data-bs-theme="dark"] .service-title {
+    color: #f5f9ff;
+  }
+
+  [data-bs-theme="dark"] .service-copy {
+    color: rgba(235, 243, 255, 0.82);
+  }
+
+  [data-bs-theme="dark"] .service-btn {
+    color: #bcd6ff;
+    border-color: rgba(151, 183, 240, 0.65);
+  }
+
+  [data-bs-theme="dark"] .service-btn:hover {
+    color: #0f1c24;
+    background: #b7d0ff;
+    border-color: #b7d0ff;
   }
 
   .why-choose {
@@ -264,7 +315,7 @@ Ghar Setu
   }
 
   .testimonials-title {
-    color: #0b6667;
+    color: var(--bs-heading-color);
     font-size: clamp(1.85rem, 3.2vw, 2.65rem);
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -407,10 +458,6 @@ Ghar Setu
     box-shadow: 0 16px 30px rgba(5, 10, 16, 0.48);
   }
 
-  [data-bs-theme="dark"] .testimonials-title {
-    color: #7ad2cb;
-  }
-
   [data-bs-theme="dark"] .testimonials-subtitle {
     color: rgba(232, 239, 250, 0.75);
   }
@@ -550,7 +597,7 @@ Ghar Setu
     <!-- Banner image showing rental lifestyle -->
     <img
       class="service-section-banner"
-      src="https://kajabi-storefronts-production.kajabi-cdn.com/kajabi-storefronts-production/file-uploads/blogs/6976/images/0e6a64-b732-f51-c866-32d17c43b_5_Short_Term_Rental_Design_Tips_from_Top-Rated_Airbnb_Hosts.jpg"
+      src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1600&q=80"
       alt="How we help you in rent"
       loading="lazy"
       referrerpolicy="no-referrer"
