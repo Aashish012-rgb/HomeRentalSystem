@@ -87,6 +87,30 @@
     transform: translateX(3px);
 }
 
+.property-meta-line {
+    color: #253549;
+}
+
+.property-meta-line i {
+    color: #1184a7;
+}
+
+.property-type-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.18rem 0.58rem;
+    border-radius: 999px;
+    border: 1px solid #c9daef;
+    background: #edf4ff;
+    color: #29486b;
+    font-weight: 600;
+}
+
+.property-type-chip i {
+    color: #2f79d8;
+}
+
 /* Button animations */
 .property-card .btn {
     transition: all 0.3s ease;
@@ -245,6 +269,7 @@
     background-color: #16202b;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
     color: #f8fbff;
+    color-scheme: dark;
 }
 
 [data-bs-theme="dark"] .form-select:hover {
@@ -269,6 +294,24 @@
     background: linear-gradient(#233548, #233548);
     background-color: #233548;
     color: white;
+}
+
+[data-bs-theme="dark"] .property-meta-line {
+    color: #e7eef8;
+}
+
+[data-bs-theme="dark"] .property-meta-line i {
+    color: #78c8e5;
+}
+
+[data-bs-theme="dark"] .property-type-chip {
+    border-color: rgba(147, 197, 253, 0.4);
+    background: rgba(59, 130, 246, 0.16);
+    color: #dbeafe;
+}
+
+[data-bs-theme="dark"] .property-type-chip i {
+    color: #93c5fd;
 }
 
 /* Empty state animation */
@@ -466,7 +509,7 @@ New Property
 </h2>
 
 
-<p class="small mb-1 property-info-item">
+<p class="small mb-1 property-info-item property-meta-line">
 
 <i class="fas fa-map-marker-alt text-info me-1"></i>
 
@@ -474,12 +517,11 @@ New Property
 
 </p>
 
-<p class="small mb-1 property-info-item">
-
-<i class="fas fa-door-open text-info me-1"></i>
-
+<p class="small mb-1 property-info-item property-meta-line">
+<span class="property-type-chip">
+<i class="fas fa-door-open"></i>
 {{ property.property_type|title }}
-
+</span>
 </p>
 
 

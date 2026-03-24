@@ -165,7 +165,7 @@
   [data-bs-theme="dark"] .property-form-card select,
   [data-bs-theme="dark"] .property-form-card textarea,
   [data-bs-theme="dark"] .property-form-card input[type="file"] {
-    background: rgba(9, 16, 25, 0.88);
+    background-color: rgba(9, 16, 25, 0.88);
     border-color: rgba(255, 255, 255, 0.12);
     color: #f7fbff;
   }
@@ -179,13 +179,23 @@
   [data-bs-theme="dark"] .property-form-card select {
     background-color: rgba(9, 16, 25, 0.88);
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
     border-color: rgba(255, 255, 255, 0.12);
     color: #f7fbff;
+    color-scheme: dark;
+    -webkit-text-fill-color: #f7fbff;
   }
 
   [data-bs-theme="dark"] .property-form-card select option {
     background: #101824;
     color: #f7fbff;
+  }
+
+  [data-bs-theme="dark"] .property-form-card select option:checked {
+    background: #1d2a3a;
+    color: #ffffff;
   }
 
   [data-bs-theme="dark"] .property-form-card input:not([type="file"])::placeholder,
@@ -271,7 +281,7 @@
               <div class="col-12">
                 <label class="form-label-custom" for="{{ form.location.id_for_label }}">Location</label>
                 {{ form.location }}
-                <div class="form-text">Type the location name you want to show in filters. The map only saves coordinates.</div>
+                <div class="form-text">Type your location name here. This exact text is what will be saved and used in filters.</div>
                 {% if form.location.errors %}
                 <div class="text-danger small">{{ form.location.errors|join:", " }}</div>
                 {% endif %}
@@ -286,7 +296,7 @@
               <div class="map-circle">
                 <div id="map"></div>
               </div>
-              <p class="map-help">Click anywhere on the map to set latitude and longitude. The saved location name comes from the field above.</p>
+              <p class="map-help">Click anywhere on the map to set latitude and longitude only. Location name always comes from the Location field above.</p>
               <p class="map-help" id="selected-location-display"></p>
             </div>
 
@@ -313,7 +323,6 @@
     var locationInput = document.getElementById('id_location');
     var locationDisplay = document.getElementById('selected-location-display');
     var propertyForm = document.querySelector('form[method="post"]');
-    var locationRequestId = 0;
 
     var defaultLat = parseFloat(latInput.value) || 26.6735;
     var defaultLng = parseFloat(lngInput.value) || 87.2773;
@@ -336,7 +345,7 @@
         return (value || '').trim().slice(0, 200);
     }
 
-    function updateTypedLocationMessage() {
+    function updateTypedLocationMessage(prefixMessage) {
         if (!locationDisplay || !locationInput) {
             return;
         }
@@ -345,59 +354,10 @@
             locationInput.value = normalizedValue;
         }
         if (normalizedValue) {
-            locationDisplay.textContent = 'Saved location name: ' + normalizedValue;
+            locationDisplay.textContent = (prefixMessage ? prefixMessage + ' ' : '') + 'Saved location name: ' + normalizedValue;
         } else {
-            locationDisplay.textContent = 'Pick the map point if you want, then type the location name above.';
+            locationDisplay.textContent = (prefixMessage ? prefixMessage + ' ' : '') + 'Please type the location name above.';
         }
-    }
-
-    function updateMapLocationMessage(addressText) {
-        if (!locationDisplay || !locationInput) {
-            return;
-        }
-
-        var normalizedValue = normalizeLocationValue(locationInput.value);
-        if (normalizedValue) {
-            locationDisplay.textContent = 'Map pin set near: ' + addressText + '. Saved location name: ' + normalizedValue;
-        } else {
-            locationDisplay.textContent = 'Map pin set near: ' + addressText + '. Please type the location name above.';
-        }
-    }
-
-    function updateLocationFromMap(lat, lng) {
-        if (!locationDisplay) {
-            return;
-        }
-
-        var requestId = ++locationRequestId;
-        locationDisplay.textContent = 'Fetching map area...';
-
-        fetch(
-            'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='
-            + encodeURIComponent(lat)
-            + '&lon='
-            + encodeURIComponent(lng),
-            { headers: { 'Accept': 'application/json' } }
-        )
-        .then(function(response) {
-            if (!response.ok) {
-                throw new Error('Unable to fetch location');
-            }
-            return response.json();
-        })
-        .then(function(data) {
-            if (requestId !== locationRequestId) {
-                return;
-            }
-            if (data && data.display_name) {
-                updateMapLocationMessage(data.display_name);
-            } else {
-                updateMapLocationMessage('the selected point');
-            }
-        })
-        .catch(function() {
-            updateMapLocationMessage('the selected point');
-        });
     }
 
     if (locationInput) {
@@ -407,7 +367,7 @@
     }
 
     if (latInput.value && lngInput.value) {
-        updateLocationFromMap(defaultLat, defaultLng);
+        updateTypedLocationMessage('Map coordinates loaded.');
     }
 
     map.on('click', function(e) {
@@ -421,7 +381,7 @@
         marker = L.marker([lat, lng]).addTo(map);
         latInput.value = lat.toFixed(6);
         lngInput.value = lng.toFixed(6);
-        updateLocationFromMap(lat, lng);
+        updateTypedLocationMessage('Map coordinates updated.');
     });
 
     if (propertyForm && locationInput) {

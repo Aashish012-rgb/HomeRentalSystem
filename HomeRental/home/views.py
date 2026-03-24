@@ -360,6 +360,7 @@ def register(request):
         if form.is_valid():
             user = form.save()  # Create new user
             login(request, user)  # Auto-login after registration
+            messages.success(request, f"Account created successfully. Welcome, {user.username}!")
             return redirect('home_list')
     else:
         form = UserRegistrationForm()

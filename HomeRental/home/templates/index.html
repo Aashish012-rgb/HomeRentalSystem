@@ -774,6 +774,12 @@ Ghar Setu
 <!-- INTERSECTION OBSERVER SCRIPT: Handles scroll-triggered animations for reveal elements -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
+    {% if messages %}
+      {% for message in messages %}
+    alert("{{ message|escapejs }}");
+      {% endfor %}
+    {% endif %}
+
     // Get all elements with reveal class that haven't been revealed yet
     const revealItems = document.querySelectorAll(".reveal:not(.is-visible)");
     
