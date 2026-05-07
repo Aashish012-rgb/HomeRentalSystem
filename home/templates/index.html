@@ -1,0 +1,700 @@
+
+{% extends "layout.html" %}
+
+<!-- Template: Homepage (Index) - Ghar Setu
+     Purpose: Landing page showcasing the home rental platform with hero section, services, benefits, and testimonials
+     Features: Animated hero banner with CTA, service overview cards, why-choose cards, testimonials carousel, review submission link
+     For: New and existing users to discover platform capabilities and user testimonials
+     Responsive: Fully responsive with mobile, tablet, and desktop breakpoints; RTL safety; accessibility support
+-->
+
+{% block title %}
+Ghar Setu
+{% endblock %}
+
+{% block extra_head %}
+<!-- Page-specific styles for hero, service cards, testimonials, and animations -->
+<style>
+  .home-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;
+    min-height: clamp(460px, 70vh, 680px);
+    display: flex;
+    align-items: center;
+    background-image:
+      linear-gradient(120deg, rgba(18, 31, 40, 0.82), rgba(18, 31, 40, 0.5)),
+      url("https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80");
+    background-size: cover;
+    background-position: center;
+  }
+
+  .home-hero::before {
+    content: "";
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    top: -80px;
+    right: -70px;
+    background: radial-gradient(circle, rgba(111, 177, 255, 0.35), rgba(111, 177, 255, 0));
+    animation: blobFloat 7s ease-in-out infinite;
+  }
+
+  .home-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 82% 18%, rgba(141, 193, 170, 0.25), transparent 45%),
+      radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.08), transparent 40%);
+    pointer-events: none;
+  }
+
+  .home-hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 780px;
+    padding: clamp(2rem, 5vw, 4rem);
+    color: #ffffff;
+    animation: heroRise 0.8s ease-out both;
+  }
+
+  .hero-tagline {
+    font-size: 0.82rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    opacity: 0.92;
+  }
+
+  .hero-title {
+    font-size: clamp(2rem, 5vw, 4.3rem);
+    line-height: 1.03;
+    font-weight: 800;
+    margin-bottom: 1.25rem;
+    text-wrap: balance;
+  }
+
+  .hero-subtext {
+    font-size: clamp(1rem, 1.8vw, 1.2rem);
+    color: rgba(255, 255, 255, 0.9);
+    max-width: 62ch;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.72rem 1.2rem;
+    border-radius: 999px;
+    font-weight: 700;
+    text-decoration: none;
+    color: #0f1c24;
+    background: #f4f7f8;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  .hero-nav-btn i {
+    transition: transform 0.2s ease;
+  }
+
+  .hero-nav-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.26);
+    background: #ffffff;
+    color: #0f1c24;
+  }
+
+  .hero-nav-btn:hover i {
+    transform: translateX(4px);
+  }
+
+  .home-services {
+    padding-top: 1.2rem;
+    padding-bottom: 0.2rem;
+  }
+
+  .home-services-stage {
+    position: relative;
+  }
+
+  .service-card {
+    position: relative;
+    height: 100%;
+    border-radius: 1.35rem;
+    background: rgba(247, 248, 250, 0.62);
+    border: 1px solid rgba(217, 222, 229, 0.72);
+    backdrop-filter: blur(3px);
+    z-index: 3;
+    box-shadow: 0 8px 24px rgba(14, 22, 34, 0.08);
+    overflow: hidden;
+    transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+  }
+
+  .service-section-banner {
+    border-radius: 1rem;
+    width: 100%;
+    height: clamp(420px, 56vw, 620px);
+    object-fit: cover;
+    display: block;
+    box-shadow: 0 8px 22px rgba(16, 28, 44, 0.12);
+  }
+
+  .service-overlay-grid {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 1.5rem;
+    z-index: 2;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .service-card::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(130deg, rgba(30, 99, 239, 0.13), rgba(45, 186, 136, 0.08), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+
+  .service-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 34px rgba(14, 22, 34, 0.14);
+    border-color: #c9d5ea;
+  }
+
+  .service-card:hover::before {
+    opacity: 1;
+  }
+
+  .service-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.9rem;
+  }
+
+  .service-copy {
+    font-size: 1.26rem;
+    color: #273446;
+    line-height: 1.55;
+    min-height: 120px;
+  }
+
+  .service-btn {
+    border-radius: 0.9rem;
+    font-weight: 700;
+    padding: 0.6rem 1.2rem;
+  }
+
+  @media (max-width: 991.98px) {
+    .service-overlay-grid {
+      position: static;
+      margin-top: 1rem;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .service-card {
+      background: rgba(247, 248, 250, 0.82);
+    }
+  }
+
+  .why-choose {
+    padding-top: 1.4rem;
+    padding-bottom: 0.8rem;
+  }
+
+  .why-card {
+    height: 100%;
+    border-radius: 1rem;
+    background: #ffffff;
+    border: 1px solid #dfe5ef;
+    box-shadow: 0 8px 22px rgba(16, 28, 44, 0.08);
+    padding: 1.2rem;
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  }
+
+  .why-card:hover {
+    transform: translateY(-6px);
+    border-color: #cbd6ea;
+    box-shadow: 0 14px 30px rgba(16, 28, 44, 0.14);
+  }
+
+  .why-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 0.95rem;
+    overflow: hidden;
+    margin-bottom: 0.85rem;
+    background: #e9eff7;
+    border: 1px solid #d6e0ee;
+  }
+
+  .why-icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .why-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    color: #142033;
+  }
+
+  .why-copy {
+    margin: 0;
+    color: #4d5c70;
+    line-height: 1.5;
+  }
+
+  .testimonials {
+    padding-top: 1.2rem;
+    padding-bottom: 1rem;
+  }
+
+  .testimonial-card {
+    height: 100%;
+    border-radius: 1rem;
+    background: #ffffff;
+    border: 1px solid #dfe5ef;
+    box-shadow: 0 8px 22px rgba(16, 28, 44, 0.08);
+    padding: 1.25rem;
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  }
+
+  .testimonial-card:hover {
+    transform: translateY(-6px);
+    border-color: #cbd6ea;
+    box-shadow: 0 14px 30px rgba(16, 28, 44, 0.14);
+  }
+
+  .testimonial-form-wrap {
+    border-radius: 1rem;
+    border: 1px solid #dfe5ef;
+    background: #ffffff;
+    box-shadow: 0 8px 22px rgba(16, 28, 44, 0.08);
+    padding: 1.25rem;
+    color: #1f2a37;
+  }
+
+  .testimonial-form-label {
+    font-weight: 600;
+    color: #1b2b3f;
+    margin-bottom: 0.4rem;
+  }
+
+  .testimonial-text {
+    color: #344559;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  .testimonial-user {
+    margin: 0;
+    font-weight: 700;
+    color: #142033;
+  }
+
+  .testimonial-meta {
+    margin: 0;
+    color: #6b7a8d;
+    font-size: 0.92rem;
+  }
+
+  .testimonial-empty {
+    border-radius: 1rem;
+    border: 1px dashed #cfd9e8;
+    background: #fafcff;
+    padding: 1.25rem;
+    text-align: center;
+    color: #58677b;
+  }
+
+  .testimonial-rating {
+    margin-bottom: 0.6rem;
+    color: #f4b400;
+  }
+
+  .testimonial-form-wrap .text-muted {
+    color: #6b7a8d !important;
+  }
+
+  [data-bs-theme="dark"] .why-card {
+    background: linear-gradient(135deg, #16202b 0%, #223346 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 22px rgba(16, 28, 44, 0.14);
+  }
+
+  [data-bs-theme="dark"] .why-card:hover {
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 14px 30px rgba(9, 16, 24, 0.24);
+  }
+
+  [data-bs-theme="dark"] .why-icon {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+  }
+
+  [data-bs-theme="dark"] .why-title {
+    color: #f7fbff;
+  }
+
+  [data-bs-theme="dark"] .why-copy {
+    color: rgba(247, 251, 255, 0.78);
+  }
+
+  [data-bs-theme="dark"] .testimonial-card {
+    background: linear-gradient(135deg, #16202b 0%, #223346 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 22px rgba(16, 28, 44, 0.14);
+  }
+
+  [data-bs-theme="dark"] .testimonial-card:hover {
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 14px 30px rgba(9, 16, 24, 0.24);
+  }
+
+  [data-bs-theme="dark"] .testimonial-form-wrap {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(135deg, #16202b 0%, #223346 100%);
+    box-shadow: 0 8px 22px rgba(16, 28, 44, 0.14);
+    color: #f7fbff;
+  }
+
+  [data-bs-theme="dark"] .testimonial-text {
+    color: rgba(247, 251, 255, 0.82);
+  }
+
+  [data-bs-theme="dark"] .testimonial-user {
+    color: #f7fbff;
+  }
+
+  [data-bs-theme="dark"] .testimonial-meta {
+    color: rgba(247, 251, 255, 0.68);
+  }
+
+  [data-bs-theme="dark"] .testimonial-empty {
+    border: 1px dashed rgba(255, 255, 255, 0.18);
+    background: linear-gradient(135deg, #16202b 0%, #223346 100%);
+    color: rgba(247, 251, 255, 0.78);
+  }
+
+  [data-bs-theme="dark"] .testimonial-form-wrap .text-muted {
+    color: rgba(247, 251, 255, 0.72) !important;
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-delay-1 {
+    transition-delay: 0.08s;
+  }
+
+  .reveal-delay-2 {
+    transition-delay: 0.16s;
+  }
+
+  .reveal-delay-3 {
+    transition-delay: 0.24s;
+  }
+
+  @keyframes heroRise {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes blobFloat {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(14px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-hero::before,
+    .home-hero-content,
+    .reveal,
+    .service-card,
+    .hero-nav-btn i {
+      animation: none !important;
+      transition: none !important;
+      transform: none !important;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Main homepage content with hero, services, benefits, and testimonials -->
+
+<!-- HERO SECTION: Landing banner with platform tagline and primary CTA -->
+<section class="container py-4 py-lg-5">
+  <!-- Hero banner: animated gradient background with property image -->
+  <div class="home-hero shadow-sm">
+    <!-- Hero content container with animated text entrance -->
+    <div class="home-hero-content">
+      <!-- Tagline: Platform branding -->
+      <p class="hero-tagline reveal is-visible">Ghar Setu Rental Platform</p>
+      
+      <!-- Main headline: Value proposition -->
+      <h1 class="hero-title reveal is-visible reveal-delay-1">Trusted spaces for living, renting, and growing</h1>
+      
+      <!-- Subheading: Features and benefits summary -->
+      <p class="hero-subtext reveal is-visible reveal-delay-2">
+        Browse homes, rooms, and apartments with clear details and direct owner contact.
+        Post your property in minutes and connect with verified tenants.
+      </p>
+      
+      <!-- Primary CTA button with icon animation on hover -->
+      <a class="hero-nav-btn reveal is-visible reveal-delay-3" href="{% url 'properties' %}">
+        Dream Spaces
+        <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES SECTION: Overview of three main platform features (Buy, Rent, List) -->
+<section class="container home-services">
+  <!-- Section header with title and description -->
+  <div class="text-center mb-4 mb-lg-5 reveal">
+    <h2 class="fw-bold mb-2">How We Help You</h2>
+    <p class="text-muted mb-0">Everything you need to buy, rent, or list a property in one place.</p>
+  </div>
+  
+  <!-- Service cards container with responsive grid -->
+  <div class="home-services-stage mb-4 mb-lg-5 reveal">
+    <!-- Banner image showing rental lifestyle -->
+    <img
+      class="service-section-banner"
+      src="https://kajabi-storefronts-production.kajabi-cdn.com/kajabi-storefronts-production/file-uploads/blogs/6976/images/0e6a64-b732-f51-c866-32d17c43b_5_Short_Term_Rental_Design_Tips_from_Top-Rated_Airbnb_Hosts.jpg"
+      alt="How we help you in rent"
+      loading="lazy"
+      referrerpolicy="no-referrer"
+    >
+    
+    <!-- Overlay grid with three service cards positioned at bottom of image -->
+    <div class="service-overlay-grid">
+      <div class="row g-4">
+        <!-- Service Card 1: Buy a Home -->
+        <div class="col-12 col-lg-4">
+          <article class="service-card p-4 p-lg-5 text-center reveal reveal-delay-1">
+            <h2 class="service-title">Buy a Home</h2>
+            <p class="service-copy">
+              Compare neighborhood options, understand real costs, and move forward with confidence.
+            </p>
+            <!-- CTA button to property listings -->
+            <a class="btn btn-outline-primary service-btn" href="{% url 'properties' %}">Explore Listings</a>
+          </article>
+        </div>
+        
+        <!-- Service Card 2: Rent a Home -->
+        <div class="col-12 col-lg-4">
+          <article class="service-card p-4 p-lg-5 text-center reveal reveal-delay-2">
+            <h2 class="service-title">Rent a Home</h2>
+            <p class="service-copy">
+              Discover verified rental spaces and connect with owners through a smooth digital flow.
+            </p>
+            <!-- CTA button to view rental properties -->
+            <a class="btn btn-outline-primary service-btn" href="{% url 'properties' %}">Find Rentals</a>
+          </article>
+        </div>
+        
+        <!-- Service Card 3: List a Home -->
+        <div class="col-12 col-lg-4">
+          <article class="service-card p-4 p-lg-5 text-center reveal reveal-delay-3">
+            <h2 class="service-title">List a Home</h2>
+            <p class="service-copy">
+              Post your property quickly, highlight key details, and receive booking interest faster.
+            </p>
+            <!-- CTA button for property owners to list -->
+            <a class="btn btn-outline-primary service-btn" href="{% url 'property' %}">See Your Options</a>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY CHOOSE US SECTION: Key platform benefits with icon cards -->
+<section class="container why-choose">
+  <!-- Section header with title and description -->
+  <div class="text-center mb-4 mb-lg-5 reveal">
+    <h2 class="fw-bold mb-2">Why Choose Us</h2>
+    <p class="text-muted mb-0">Built to make renting safer, simpler, and faster for everyone.</p>
+  </div>
+  
+  <!-- Four benefit cards in responsive grid (4 columns on desktop, 2 on tablet, 1 on mobile) -->
+  <div class="row g-3 g-lg-4">
+    <!-- Benefit Card 1: Verified Listings -->
+    <div class="col-12 col-sm-6 col-lg-3">
+      <article class="why-card reveal reveal-delay-1">
+        <!-- Icon image: verification/listings -->
+        <div class="why-icon">
+          <img class="why-icon-img" src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=120&q=80" alt="Verified listings">
+        </div>
+        <h3 class="why-title">Verified Listings</h3>
+        <p class="why-copy">Review trusted property details with better listing quality and fewer surprises.</p>
+      </article>
+    </div>
+    
+    <!-- Benefit Card 2: Secure Communication -->
+    <div class="col-12 col-sm-6 col-lg-3">
+      <article class="why-card reveal reveal-delay-2">
+        <!-- Icon image: secure communication -->
+        <div class="why-icon">
+          <img class="why-icon-img" src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=120&q=80" alt="Secure communication">
+        </div>
+        <h3 class="why-title">Secure Communication</h3>
+        <p class="why-copy">Connect through a platform designed for safer interactions between owners and tenants.</p>
+      </article>
+    </div>
+    
+    <!-- Benefit Card 3: Direct Owner Contact -->
+    <div class="col-12 col-sm-6 col-lg-3">
+      <article class="why-card reveal reveal-delay-3">
+        <!-- Icon image: direct contact -->
+        <div class="why-icon">
+          <img class="why-icon-img" src="https://images.unsplash.com/photo-1521790797524-b2497295b8a0?auto=format&fit=crop&w=120&q=80" alt="Direct owner contact">
+        </div>
+        <h3 class="why-title">Direct Owner Contact</h3>
+        <p class="why-copy">Speak directly with property owners to clarify details and decide with confidence.</p>
+      </article>
+    </div>
+    
+    <!-- Benefit Card 4: Fast Booking -->
+    <div class="col-12 col-sm-6 col-lg-3">
+      <article class="why-card reveal">
+        <!-- Icon image: fast/quick process -->
+        <div class="why-icon">
+          <img class="why-icon-img" src="https://images.unsplash.com/photo-1556155092-490a1ba16284?auto=format&fit=crop&w=120&q=80" alt="Fast booking">
+        </div>
+        <h3 class="why-title">Fast Booking</h3>
+        <p class="why-copy">Move from search to booking quickly with a straightforward and efficient flow.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS SECTION: User reviews and ratings showcase -->
+<section class="container testimonials">
+  <!-- Section header with title and description -->
+  <div class="text-center mb-4 mb-lg-5 reveal">
+    <h2 class="fw-bold mb-2">Ratings & Reviews</h2>
+    <p class="text-muted mb-0">What renters and owners say about using our platform.</p>
+  </div>
+  
+  <!-- Call-to-action box: Encourage user reviews -->
+  <div class="testimonial-form-wrap reveal mb-4 mb-lg-5">
+    <h3 class="h5 mb-2">Want to share your experience?</h3>
+    <p class="text-muted mb-3">Click below to rate us on a dedicated reviews page.</p>
+    <!-- Button to reviews page where users can submit testimonials -->
+    <a class="btn btn-primary" href="{% url 'reviews' %}">Rate Us</a>
+  </div>
+  
+  <!-- Testimonial cards grid: Display user reviews with ratings -->
+  <div class="row g-3 g-lg-4">
+    {% for testimonial in testimonials %}
+      <!-- Individual testimonial card with rating stars -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <article class="testimonial-card reveal">
+          <!-- Star rating display: Shows 1-5 filled/empty stars based on testimonial.rating -->
+          <div class="testimonial-rating" aria-label="{{ testimonial.rating }} out of 5 stars">
+            <!-- Star 1 -->
+            <i class="{% if testimonial.rating >= 1 %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
+            <!-- Star 2 -->
+            <i class="{% if testimonial.rating >= 2 %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
+            <!-- Star 3 -->
+            <i class="{% if testimonial.rating >= 3 %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
+            <!-- Star 4 -->
+            <i class="{% if testimonial.rating >= 4 %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
+            <!-- Star 5 -->
+            <i class="{% if testimonial.rating >= 5 %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
+          </div>
+          
+          <!-- Testimonial text/message content -->
+          <p class="testimonial-text mb-3">{{ testimonial.message }}</p>
+          
+          <!-- Author username -->
+          <p class="testimonial-user">{{ testimonial.user.username }}</p>
+          
+          <!-- User role (e.g., "Tenant", "Property Owner") -->
+          <p class="testimonial-meta">{{ testimonial.get_role_display }}</p>
+        </article>
+      </div>
+    {% empty %}
+      <!-- Empty state: Show when no testimonials exist -->
+      <div class="col-12">
+        <div class="testimonial-empty reveal">
+          No testimonials yet. Be the first to share your experience.
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- INTERSECTION OBSERVER SCRIPT: Handles scroll-triggered animations for reveal elements -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Get all elements with reveal class that haven't been revealed yet
+    const revealItems = document.querySelectorAll(".reveal:not(.is-visible)");
+    
+    // Fallback for browsers without IntersectionObserver support or if no items to reveal
+    if (!("IntersectionObserver" in window) || revealItems.length === 0) {
+      // Add is-visible class to all items immediately
+      revealItems.forEach(function (el) {
+        el.classList.add("is-visible");
+      });
+      return;
+    }
+
+    // Create observer for scroll-triggered animations
+    const observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          // When element enters viewport, add is-visible class to trigger animation
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            // Stop observing this element after it's revealed
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.2 } // Trigger when 20% of element is visible
+    );
+
+    // Observe all reveal items
+    revealItems.forEach(function (el) {
+      observer.observe(el);
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,493 @@
+{% load static %}
+<!--
+  Template: Base Layout (layout.html)
+  Purpose: Main Django template that wraps all pages with consistent header, navigation, and footer
+  Features: Responsive navbar with notifications dropdown, user auth menu, footer links
+  Components: Bootstrap navbar (fixed-top), notification bell with unread count, user profile dropdown
+  Used By: Extended by all page templates (index.html, property_list.html, property_detail.html, etc.)
+  Responsive: Mobile-friendly with hamburger menu toggle on small screens
+-->
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+<!-- Meta tags and page meta information -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  (function () {
+    const storageKey = "gharsetu-theme";
+    const root = document.documentElement;
+    let theme = "light";
+
+    try {
+      const savedTheme = localStorage.getItem(storageKey);
+      if (savedTheme === "light" || savedTheme === "dark") {
+        theme = savedTheme;
+      } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        theme = "dark";
+      }
+    } catch (error) {
+      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        theme = "dark";
+      }
+    }
+
+    root.setAttribute("data-bs-theme", theme);
+  }());
+</script>
+
+<!-- Dynamic page title block - overridden by child templates -->
+<title>{% block title %}Ghar Setu{% endblock %}</title>
+
+<!-- Bootstrap 5.3.8 CSS framework for responsive layout and components -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Font Awesome 6.7.2 icon library for UI icons throughout the site -->
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+<!-- Site styles: small UI enhancements (notifications, etc.) -->
+<link rel="stylesheet" href="{% static 'css/site.css' %}">
+
+<!-- Leaflet.js for interactive map displays (property location, property search) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<!-- Block for page-specific CSS styles (filled by child templates) -->
+{% block extra_head %}{% endblock %}
+</head>
+
+<body class="site-shell d-flex flex-column min-vh-100">
+
+{% block header %}
+<!-- NAVIGATION BAR: Fixed top navbar with site branding, main navigation, and user controls -->
+<nav class="navbar navbar-expand-lg border-bottom fixed-top site-navbar">
+<div class="container">
+
+  <!-- Brand/Logo: Links to homepage -->
+  <a class="navbar-brand fw-bold" href="{% url 'home_list' %}">
+    <i class="fas fa-house me-1"></i>
+    Ghar Setu
+  </a>
+
+  <!-- Mobile hamburger menu toggle button -->
+  <button class="navbar-toggler"
+  type="button"
+  data-bs-toggle="collapse"
+  data-bs-target="#navbarMain">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <!-- Main navigation menu (collapsed on mobile) -->
+  <div class="collapse navbar-collapse" id="navbarMain">
+
+    <!-- Center navigation links: Home, Properties, About, Contact -->
+    <ul class="navbar-nav mx-auto">
+
+      <!-- Home link - goes to main page -->
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'home_list' %}">Home</a>
+      </li>
+
+       <!-- Properties link - browse all listings -->
+       <li class="nav-item">
+         <a class="nav-link" href="{% url 'properties' %}">Properties</a>
+       </li>
+
+      <!-- About page link -->
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'about' %}">About</a>
+      </li>
+
+      <!-- Help/Contact page link -->
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'help' %}">Contact</a>
+      </li>
+
+    </ul>
+
+    <!-- Right-aligned navbar items: Notifications (for authenticated users) and User menu -->
+    <ul class="navbar-nav ms-auto align-items-center">
+
+      <li class="nav-item me-2">
+        <button
+          type="button"
+          id="theme-toggle"
+          class="btn btn-sm site-theme-toggle"
+          aria-label="Toggle dark mode"
+          aria-pressed="false">
+          <i id="theme-toggle-icon" class="fas fa-moon"></i>
+          <span id="theme-toggle-label">Dark</span>
+        </button>
+      </li>
+
+      {% if request.user.is_authenticated %}
+
+      <!-- MESSAGES DROPDOWN: Shows recent chat conversations and unread message count -->
+      <li class="nav-item dropdown me-2">
+
+        <a class="nav-link position-relative"
+        data-bs-toggle="dropdown"
+        href="#"
+        role="button"
+        aria-expanded="false"
+        aria-label="Messages">
+          <i class="fas fa-comment-dots"></i>
+
+          {% if unread_chat_count > 0 %}
+          <span class="notif-pulse"></span>
+          <span class="badge bg-danger position-absolute top-0 start-100 translate-middle notif-count-badge">
+            {{ unread_chat_count }}
+          </span>
+          {% endif %}
+        </a>
+
+        <ul class="dropdown-menu dropdown-menu-end shadow notif-dropdown p-0">
+          <li class="px-3 py-2 border-bottom">
+            <div class="d-flex align-items-center justify-content-between gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <i class="fas fa-comment-dots text-primary"></i>
+                <span class="fw-semibold">Messages</span>
+                {% if unread_chat_count > 0 %}
+                <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis">
+                  {{ unread_chat_count }} new
+                </span>
+                {% endif %}
+              </div>
+            </div>
+          </li>
+
+          <li class="notif-scroll">
+            <div class="list-group list-group-flush">
+              {% for chat in recent_chats %}
+              <a class="list-group-item list-group-item-action border-0 d-flex gap-2 align-items-start notif-item {% if chat.is_unread %}notif-unread{% endif %}"
+              href="{{ chat.url }}">
+                <span class="notif-icon bg-primary-subtle text-primary-emphasis">
+                  <i class="fas fa-message"></i>
+                </span>
+
+                <div class="flex-grow-1 min-w-0">
+                  <div class="d-flex align-items-start justify-content-between gap-2">
+                    <div class="message-dropdown-title {% if chat.is_unread %}fw-semibold{% endif %}">
+                      {{ chat.counterpart_name }}
+                    </div>
+                    <div class="small text-muted text-nowrap">
+                      {{ chat.created_at|timesince }} ago
+                    </div>
+                  </div>
+                  <div class="notif-message {% if chat.is_unread %}fw-semibold{% endif %}">
+                    {{ chat.preview }}
+                  </div>
+                  <div class="message-dropdown-subtitle">
+                    {{ chat.property_title }}
+                  </div>
+                </div>
+
+                {% if chat.is_unread %}
+                <span class="notif-dot bg-primary"></span>
+                {% endif %}
+              </a>
+              {% empty %}
+              <div class="px-3 py-4 text-center text-muted">
+                <i class="fas fa-comments mb-2" style="font-size: 1.4rem;"></i>
+                <div class="fw-semibold">No messages yet</div>
+                <div class="small">Accepted booking chats will show up here.</div>
+              </div>
+              {% endfor %}
+            </div>
+          </li>
+
+          <li class="border-top">
+            {% if recent_chats %}
+            <a class="dropdown-item text-center py-2"
+            href="{{ recent_chats.0.url }}">
+              Open latest chat
+            </a>
+            {% else %}
+            <span class="dropdown-item text-center py-2 text-muted">
+              No chats yet
+            </span>
+            {% endif %}
+          </li>
+        </ul>
+      </li>
+
+      <!-- NOTIFICATIONS DROPDOWN: Shows recent booking notifications -->
+      <li class="nav-item dropdown me-2">
+ 
+        <!-- Bell icon with unread notification count badge -->
+        <a class="nav-link position-relative"
+        data-bs-toggle="dropdown"
+        href="#"
+        role="button"
+        aria-expanded="false"
+        aria-label="Notifications">
+          <i class="fas fa-bell"></i>
+           
+          <!-- Pulse + badge showing number of unread notifications -->
+          {% if unread_notifications_count > 0 %}
+          <span class="notif-pulse"></span>
+          <span class="badge bg-danger position-absolute top-0 start-100 translate-middle notif-count-badge">
+            {{ unread_notifications_count }}
+          </span>
+          {% endif %}
+        </a>
+
+        <!-- Dropdown menu with recent notifications -->
+        <ul class="dropdown-menu dropdown-menu-end shadow notif-dropdown p-0">
+ 
+          <!-- Header -->
+          <li class="px-3 py-2 border-bottom">
+            <div class="d-flex align-items-center justify-content-between gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <i class="fas fa-bell text-primary"></i>
+                <span class="fw-semibold">Notifications</span>
+                {% if unread_notifications_count > 0 %}
+                <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis">
+                  {{ unread_notifications_count }} new
+                </span>
+                {% endif %}
+              </div>
+  
+              <!-- Mark all notifications as read button -->
+              {% if unread_notifications_count > 0 %}
+              <form method="post" action="{% url 'mark_all_notifications_read' %}" class="m-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-primary">
+                  <i class="fas fa-check-double me-1"></i>Mark all
+                </button>
+              </form>
+              {% endif %}
+            </div>
+          </li>
+ 
+          <!-- Recent notifications -->
+          <li class="notif-scroll">
+            <div class="list-group list-group-flush">
+              {% for notification in recent_notifications %}
+              <a class="list-group-item list-group-item-action border-0 d-flex gap-2 align-items-start notif-item {% if not notification.is_read %}notif-unread{% endif %}"
+              href="{{ notification.url }}">
+                <span class="notif-icon bg-{{ notification.accent }}-subtle text-{{ notification.accent }}-emphasis">
+                  <i class="fas {{ notification.icon }}"></i>
+                </span>
+  
+                <div class="flex-grow-1">
+                  <div class="small text-uppercase text-muted fw-semibold mb-1">
+                    {{ notification.type_label }}
+                  </div>
+                  <div class="notif-message {% if not notification.is_read %}fw-semibold{% endif %}">
+                    {{ notification.message }}
+                  </div>
+                  <div class="small text-muted mt-1">
+                    {{ notification.created_at|timesince }} ago
+                  </div>
+                </div>
+  
+                {% if not notification.is_read %}
+                <span class="notif-dot bg-{{ notification.accent }}"></span>
+                {% endif %}
+              </a>
+              {% empty %}
+              <div class="px-3 py-4 text-center text-muted">
+                <i class="fas fa-inbox mb-2" style="font-size: 1.4rem;"></i>
+                <div class="fw-semibold">No notifications</div>
+                <div class="small">You're all caught up.</div>
+              </div>
+              {% endfor %}
+            </div>
+          </li>
+ 
+          <!-- View all notifications link - goes to notifications page -->
+          <li class="border-top">
+            <a class="dropdown-item text-center py-2"
+            href="{% url 'notifications' %}">
+              View all
+            </a>
+          </li>
+ 
+        </ul>
+      </li>
+
+      {% endif %}
+
+      {% if user.is_authenticated %}
+      <!-- PROFILE LINK: Clicking the user icon now opens the signed-in user's profile page directly. -->
+      <li class="nav-item">
+        <a class="nav-link"
+        href="{% url 'profile' %}"
+        aria-label="Profile">
+          <i class="fas fa-user-circle"></i>
+        </a>
+      </li>
+      {% else %}
+      <!-- USER MENU DROPDOWN: Login/register options for guests -->
+      <li class="nav-item dropdown">
+
+        <!-- User icon trigger for dropdown -->
+        <a class="nav-link dropdown-toggle"
+        data-bs-toggle="dropdown"
+        href="#">
+          <i class="fas fa-user-circle"></i>
+        </a>
+
+        <!-- Dropdown menu with unauthenticated options -->
+        <ul class="dropdown-menu dropdown-menu-end shadow">
+
+          <!-- Login link for unauthenticated users -->
+          <li>
+            <a class="dropdown-item" href="{% url 'login' %}">
+              Login
+            </a>
+          </li>
+
+          <!-- Register link for new users -->
+          <li>
+            <a class="dropdown-item" href="{% url 'register' %}">
+              Register
+            </a>
+          </li>
+
+        </ul>
+
+      </li>
+      {% endif %}
+
+    </ul>
+
+  </div>
+</div>
+</nav>
+
+<!-- Spacer div: Compensates for fixed navbar (approximately 70px height) -->
+<div style="height:70px;"></div>
+{% endblock %}
+
+<!-- Optional hero section block for pages that need one (e.g., homepage) -->
+{% block hero %}{% endblock %}
+
+<!-- Main content area: Grows to fill available space if footer is short -->
+<main class="flex-grow-1">
+  {% block content %}{% endblock %}
+</main>
+
+{% block footer %}
+<!-- FOOTER: Site footer with links, company info, and contact details -->
+<footer class="site-footer border-top mt-5">
+
+<div class="container py-5">
+
+<div class="row g-4">
+
+  <!-- Footer Column 1: About company info -->
+  <div class="col-md-3">
+    <h6 class="fw-bold">About</h6>
+    <!-- Company description and project details -->
+    <p class="small text-muted">
+      Ghar Setu <br>
+      SYP Project 2026 <br>
+      Automated Rental Solution
+    </p>
+  </div>
+
+  <!-- Footer Column 2: Quick navigation links -->
+  <div class="col-md-3">
+    <h6 class="fw-bold">Quick Links</h6>
+
+    <!-- Link to browse all properties -->
+    <a class="d-block small text-muted"
+    href="{% url 'properties' %}">
+      Browse Properties
+    </a>
+
+    <!-- Link to list a new property (for owners) -->
+    <a class="d-block small text-muted"
+    href="{% url 'property' %}">
+      List Property
+    </a>
+
+    <!-- Login link for existing users -->
+    <a class="d-block small text-muted"
+    href="{% url 'login' %}">
+      Login
+    </a>
+
+    <!-- Registration link for new users -->
+    <a class="d-block small text-muted"
+    href="{% url 'register' %}">
+      Register
+    </a>
+
+  </div>
+
+  <!-- Footer Column 3: Support and legal links -->
+  <div class="col-md-3">
+
+    <h6 class="fw-bold">Support</h6>
+
+    <!-- Help center link -->
+    <a class="d-block small text-muted" href="#">Help Center</a>
+    <!-- Contact page link -->
+    <a class="d-block small text-muted" href="#">Contact</a>
+    <!-- Privacy policy link -->
+    <a class="d-block small text-muted" href="#">Privacy</a>
+    <!-- Terms of service link -->
+    <a class="d-block small text-muted" href="#">Terms</a>
+
+  </div>
+
+  <!-- Footer Column 4: Contact information and social media -->
+  <div class="col-md-3">
+
+    <h6 class="fw-bold">Contact</h6>
+
+    <!-- Company email address -->
+    <p class="small text-muted mb-1">
+      info@homerental.com
+    </p>
+
+    <!-- Company phone number -->
+    <p class="small text-muted mb-1">
+      025-581234
+    </p>
+
+    <!-- Company location/country -->
+    <p class="small text-muted">
+      Nepal
+    </p>
+
+    <!-- Social media links with Font Awesome icons -->
+    <div class="mt-2">
+      <!-- Facebook link -->
+      <i class="fab fa-facebook me-2"></i>
+      <!-- Twitter link -->
+      <i class="fab fa-twitter me-2"></i>
+      <!-- Instagram link -->
+      <i class="fab fa-instagram me-2"></i>
+      <!-- LinkedIn link -->
+      <i class="fab fa-linkedin"></i>
+    </div>
+
+  </div>
+
+</div>
+
+</div>
+
+<!-- Footer bottom: Copyright notice -->
+<div class="text-center border-top py-3 small text-muted">
+  &copy; 2026 Ghar Setu. All rights reserved.
+</div>
+
+</footer>
+{% endblock %}
+
+<!-- Bootstrap 5 JavaScript bundle for interactive components (modals, dropdowns, etc.) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/theme_toggle.js' %}"></script>
+
+<!-- Block for page-specific JavaScript (filled by child templates) -->
+{% block extra_scripts %}{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,393 @@
+{% extends "layout_minimal.html" %}
+
+{% block title %}
+{% if form.instance.pk %}Edit Property{% else %}Create Property{% endif %}
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .property-form-bg,
+  .property-form-card,
+  .property-form-card .card-body,
+  .property-form-card h1,
+  .property-form-card input,
+  .property-form-card select,
+  .property-form-card textarea,
+  .form-label-custom,
+  .map-panel,
+  .map-title,
+  .map-help {
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .property-form-bg {
+    background-color: #f8f9fa;
+  }
+
+  .property-form-card {
+    background: #ffffff;
+    border: 1px solid #e3e8ef;
+  }
+
+  .property-form-card .card-body {
+    color: #1f2a37;
+  }
+
+  .property-form-card h1 {
+    color: #142033;
+    text-shadow: none;
+  }
+
+  .property-form-card input:not([type="file"]),
+  .property-form-card select,
+  .property-form-card textarea {
+    background: #ffffff;
+    border: 1px solid #cfd8e3;
+    color: #1f2a37;
+  }
+
+  .property-form-card select {
+    background-color: #ffffff;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%231f2a37' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+    border-color: #cfd8e3;
+    color: #1f2a37;
+    padding-right: 2.35rem;
+  }
+
+  .property-form-card select option {
+    background: #ffffff;
+    color: #1f2a37;
+  }
+
+  .property-form-card input[type="file"] {
+    background: #ffffff;
+    border: 1px solid #cfd8e3;
+    color: #1f2a37;
+  }
+
+  .property-form-card input[type="file"]::file-selector-button {
+    background: #e9eef5;
+    border: 0;
+    border-right: 1px solid #cfd8e3;
+    color: #1f2a37;
+    margin-right: 0.75rem;
+    padding: 0.5rem 0.85rem;
+  }
+
+  .property-form-card input:not([type="file"])::placeholder,
+  .property-form-card textarea::placeholder {
+    color: #6c757d;
+  }
+
+  .property-form-card input:focus,
+  .property-form-card select:focus,
+  .property-form-card textarea:focus {
+    background: #ffffff;
+    border-color: #86b7fe;
+    color: #1f2a37;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+  }
+
+  .property-form-card select:focus {
+    background-color: #ffffff;
+    border-color: #86b7fe;
+    color: #1f2a37;
+  }
+
+  .form-label-custom {
+    display: block;
+    color: #23344b;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+  }
+
+  .map-panel {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: 16px;
+    background: #f8fbff;
+    border: 1px solid #dbe6f5;
+  }
+
+  .map-title {
+    color: #23344b;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    text-align: center;
+  }
+
+  .map-help {
+    color: #58677b;
+    text-align: center;
+    margin-top: 0.65rem;
+    margin-bottom: 0;
+  }
+
+  .map-circle {
+    width: min(420px, 92%);
+    aspect-ratio: 1 / 1;
+    margin: 0 auto;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid #dbe6f5;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  #map {
+    width: 100%;
+    height: 100%;
+  }
+
+  [data-bs-theme="dark"] .property-form-bg {
+    background-color: rgba(12, 18, 28, 0.72);
+  }
+
+  [data-bs-theme="dark"] .property-form-card {
+    background: linear-gradient(135deg, #16202b 0%, #223346 100%);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 12px 28px rgba(8, 14, 22, 0.28) !important;
+  }
+
+  [data-bs-theme="dark"] .property-form-card .card-body {
+    color: #f7fbff;
+  }
+
+  [data-bs-theme="dark"] .property-form-card h1,
+  [data-bs-theme="dark"] .form-label-custom,
+  [data-bs-theme="dark"] .map-title {
+    color: #f7fbff;
+  }
+
+  [data-bs-theme="dark"] .property-form-card input:not([type="file"]),
+  [data-bs-theme="dark"] .property-form-card select,
+  [data-bs-theme="dark"] .property-form-card textarea,
+  [data-bs-theme="dark"] .property-form-card input[type="file"] {
+    background-color: rgba(9, 16, 25, 0.88);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #f7fbff;
+  }
+
+  [data-bs-theme="dark"] .property-form-card input[type="file"]::file-selector-button {
+    background: rgba(255, 255, 255, 0.08);
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f7fbff;
+  }
+
+  [data-bs-theme="dark"] .property-form-card select {
+    background-color: rgba(9, 16, 25, 0.88);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #f7fbff;
+    color-scheme: dark;
+    -webkit-text-fill-color: #f7fbff;
+  }
+
+  [data-bs-theme="dark"] .property-form-card select option {
+    background: #101824;
+    color: #f7fbff;
+  }
+
+  [data-bs-theme="dark"] .property-form-card select option:checked {
+    background: #1d2a3a;
+    color: #ffffff;
+  }
+
+  [data-bs-theme="dark"] .property-form-card input:not([type="file"])::placeholder,
+  [data-bs-theme="dark"] .property-form-card textarea::placeholder,
+  [data-bs-theme="dark"] .map-help,
+  [data-bs-theme="dark"] .property-form-card .form-text {
+    color: rgba(247, 251, 255, 0.7) !important;
+  }
+
+  [data-bs-theme="dark"] .property-form-card input:focus,
+  [data-bs-theme="dark"] .property-form-card select:focus,
+  [data-bs-theme="dark"] .property-form-card textarea:focus {
+    background: rgba(12, 22, 34, 0.96);
+    border-color: #8ab4f8;
+    color: #ffffff;
+    box-shadow: 0 0 0 0.2rem rgba(138, 180, 248, 0.2);
+  }
+
+  [data-bs-theme="dark"] .map-panel {
+    background: rgba(9, 16, 25, 0.58);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  [data-bs-theme="dark"] .map-circle {
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container py-4 py-lg-5 property-form-bg rounded-3">
+  {% url 'properties' as back_browse_fallback %}
+  {% url 'my_properties' as back_my_fallback %}
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+      <div class="card shadow-sm property-form-card">
+        <div class="card-body p-4">
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+            {% if form.instance.pk %}
+              {% include "partials/back_button.html" with fallback_url=back_my_fallback label="Back" btn_class="btn btn-outline-secondary btn-sm fw-semibold" %}
+            {% else %}
+              {% include "partials/back_button.html" with fallback_url=back_browse_fallback label="Back" btn_class="btn btn-outline-secondary btn-sm fw-semibold" %}
+            {% endif %}
+            <h1 class="h3 mb-0">{% if form.instance.pk %}Edit Property{% else %}Create Property{% endif %}</h1>
+          </div>
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="row g-3">
+              <div class="col-12 col-md-7">
+                <label class="form-label-custom" for="{{ form.title.id_for_label }}">Title</label>
+                {{ form.title }}
+              </div>
+              <div class="col-12 col-md-5">
+                <label class="form-label-custom" for="{{ form.price.id_for_label }}">Price</label>
+                {{ form.price }}
+              </div>
+              <div class="col-12">
+                <label class="form-label-custom" for="{{ form.description.id_for_label }}">Description</label>
+                {{ form.description }}
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label-custom" for="{{ form.contact_name.id_for_label }}">Contact Name</label>
+                {{ form.contact_name }}
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label-custom" for="{{ form.contact_phone.id_for_label }}">Contact Phone</label>
+                {{ form.contact_phone }}
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label-custom" for="{{ form.contact_email.id_for_label }}">Contact Email</label>
+                {{ form.contact_email }}
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label-custom" for="{{ form.property_type.id_for_label }}">Property Type</label>
+                {{ form.property_type }}
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label-custom" for="{{ form.image.id_for_label }}">Property Image</label>
+                {{ form.image }}
+              </div>
+              <div class="col-12">
+                <label class="form-label-custom" for="{{ form.location.id_for_label }}">Location</label>
+                {{ form.location }}
+                <div class="form-text">Type your location name here. This exact text is what will be saved and used in filters.</div>
+                {% if form.location.errors %}
+                <div class="text-danger small">{{ form.location.errors|join:", " }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <input type="hidden" id="latitude" name="latitude" value="{{ form.latitude.value|default_if_none:'' }}">
+            <input type="hidden" id="longitude" name="longitude" value="{{ form.longitude.value|default_if_none:'' }}">
+
+            <div class="map-panel">
+              <p class="map-title">Pick Location On Map</p>
+              <div class="map-circle">
+                <div id="map"></div>
+              </div>
+              <p class="map-help">Click anywhere on the map to set latitude and longitude only. Location name always comes from the Location field above.</p>
+              <p class="map-help" id="selected-location-display"></p>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-3">
+              <button class="btn btn-primary" type="submit">{% if form.instance.pk %}Update{% else %}Create{% endif %}</button>
+              {% if form.instance.pk %}
+              <a class="btn btn-outline-secondary" href="{% url 'my_properties' %}">Cancel</a>
+              {% else %}
+              <a class="btn btn-outline-secondary" href="{% url 'properties' %}">Cancel</a>
+              {% endif %}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    var latInput = document.getElementById('latitude');
+    var lngInput = document.getElementById('longitude');
+    var locationInput = document.getElementById('id_location');
+    var locationDisplay = document.getElementById('selected-location-display');
+    var propertyForm = document.querySelector('form[method="post"]');
+
+    var defaultLat = parseFloat(latInput.value) || 26.6735;
+    var defaultLng = parseFloat(lngInput.value) || 87.2773;
+    var map = L.map('map').setView([defaultLat, defaultLng], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '(c) OpenStreetMap contributors'
+    }).addTo(map);
+
+    var marker;
+    if (latInput.value && lngInput.value) {
+        marker = L.marker([defaultLat, defaultLng]).addTo(map);
+    }
+
+    setTimeout(function () {
+        map.invalidateSize();
+    }, 0);
+
+    function normalizeLocationValue(value) {
+        return (value || '').trim().slice(0, 200);
+    }
+
+    function updateTypedLocationMessage(prefixMessage) {
+        if (!locationDisplay || !locationInput) {
+            return;
+        }
+        var normalizedValue = normalizeLocationValue(locationInput.value);
+        if (locationInput.value !== normalizedValue) {
+            locationInput.value = normalizedValue;
+        }
+        if (normalizedValue) {
+            locationDisplay.textContent = (prefixMessage ? prefixMessage + ' ' : '') + 'Saved location name: ' + normalizedValue;
+        } else {
+            locationDisplay.textContent = (prefixMessage ? prefixMessage + ' ' : '') + 'Please type the location name above.';
+        }
+    }
+
+    if (locationInput) {
+        updateTypedLocationMessage();
+        locationInput.addEventListener('input', updateTypedLocationMessage);
+        locationInput.addEventListener('blur', updateTypedLocationMessage);
+    }
+
+    if (latInput.value && lngInput.value) {
+        updateTypedLocationMessage('Map coordinates loaded.');
+    }
+
+    map.on('click', function(e) {
+        var lat = e.latlng.lat;
+        var lng = e.latlng.lng;
+
+        if (marker) {
+            map.removeLayer(marker);
+        }
+
+        marker = L.marker([lat, lng]).addTo(map);
+        latInput.value = lat.toFixed(6);
+        lngInput.value = lng.toFixed(6);
+        updateTypedLocationMessage('Map coordinates updated.');
+    });
+
+    if (propertyForm && locationInput) {
+        propertyForm.addEventListener('submit', function() {
+            locationInput.value = normalizeLocationValue(locationInput.value);
+        });
+    }
+</script>
+{% endblock %}

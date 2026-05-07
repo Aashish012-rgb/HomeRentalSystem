@@ -1,0 +1,168 @@
+{% extends "layout_minimal.html" %}
+
+<!-- Template: Notifications Page
+     Purpose: Display all booking-related notifications for the user
+     Features: Show booking requests, cancellations, acceptances; accept/reject/cancel bookings; mark as read
+     For: Property owners to manage bookings, tenants to track booking status
+-->
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    {% url 'home_list' as back_fallback %}
+    
+    <!-- Header section with title and mark all button -->
+    <div class="mb-5">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+            
+            <!-- Page title with bell icon -->
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                {% include "partials/back_button.html" with fallback_url=back_fallback label="Back" %}
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-bell me-2"></i>Booking Notifications
+                </h1>
+            </div>
+            
+            <!-- Mark all notifications as read button (only if notifications exist) -->
+            {% if notifications %}
+            <form method="post" action="{% url 'mark_all_notifications_read' %}" class="m-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-primary fw-semibold">
+                    <i class="fas fa-check-double me-2"></i>Mark all as read
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Loop through each notification -->
+    {% for notification in notifications %}
+    <div class="card shadow-sm mb-3 border-left-{{ notification.accent|default:'primary' }} border-left-4 {% if not notification.is_read %}notif-card-unread{% endif %}">
+        <div class="card-body">
+            
+            <!-- Notification header: message and status badges -->
+            <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
+                <div class="d-flex gap-3 flex-grow-1">
+                    <span class="notif-icon bg-{{ notification.accent|default:'primary' }}-subtle text-{{ notification.accent|default:'primary' }}-emphasis">
+                        <i class="fas {{ notification.icon|default:'fa-bell' }}"></i>
+                    </span>
+                     
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                            <span class="badge bg-{{ notification.accent|default:'primary' }}-subtle text-{{ notification.accent|default:'primary' }}-emphasis">
+                                {{ notification.type_label|default:"Notification" }}
+                            </span>
+                            {% if not notification.is_read %}
+                            <span class="badge bg-primary">
+                                <i class="fas fa-bolt me-1"></i>New
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Notification message text -->
+                        <p class="mb-2 fs-5">
+                            {{ notification.message }}
+                        </p>
+                         
+                        <!-- Notification timestamp -->
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>
+                            {{ notification.created_at|date:"M d, Y H:i" }}
+                            <span class="mx-1">&middot;</span>
+                            {{ notification.created_at|timesince }} ago
+                        </small>
+                    </div>
+                </div>
+                
+                <!-- Status badges (Read/Unread, Accepted) -->
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    
+                    <!-- Read status badge -->
+                    {% if notification.is_read %}
+                    <span class="badge bg-secondary">
+                        <i class="fas fa-check me-1"></i>Read
+                    </span>
+                    {% else %}
+                    <span class="badge bg-primary">
+                        <i class="fas fa-envelope me-1"></i>Unread
+                    </span>
+                    {% endif %}
+                    
+                    <!-- Acceptance status badge -->
+                    {% if notification.is_accepted %}
+                    <span class="badge bg-success">
+                        <i class="fas fa-thumbs-up me-1"></i>Accepted
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Action buttons section: varies based on notification type -->
+             
+            <!-- For pending booking requests: Accept/Reject buttons -->
+            <div class="d-flex gap-2 flex-wrap mt-3">
+                {% if notification.property_id %}
+                <a href="{% url 'property_detail' notification.property_id %}" class="btn btn-sm btn-outline-secondary fw-semibold">
+                    <i class="fas fa-up-right-from-square me-1"></i>View property
+                </a>
+                {% endif %}
+
+                {% if notification.can_chat and notification.booking_id %}
+                <a href="{% url 'chat_room' notification.booking_id %}" class="btn btn-sm btn-primary fw-semibold">
+                    <i class="fas fa-comments me-1"></i>{{ notification.chat_label|default:"Chat Now" }}
+                </a>
+                {% endif %}
+
+                {% if notification.can_pay and notification.booking_id %}
+                <a
+                    href="{% url 'payments:checkout' %}?product_name={{ notification.payment_product_name|urlencode }}&amount={{ notification.payment_amount|urlencode }}&booking_id={{ notification.booking_id }}"
+                    class="btn btn-sm btn-success fw-semibold"
+                    title="Pay with eSewa"
+                >
+                    <i class="fas fa-wallet me-1"></i>eSewa Pay
+                </a>
+                {% endif %}
+                 
+                {% if notification.can_accept and notification.booking_id %}
+                <!-- Accept booking button -->
+                <form method="post" action="{% url 'accept_booking' notification.booking_id %}" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-success fw-semibold">
+                        <i class="fas fa-check me-1"></i>Accept Booking
+                    </button>
+                </form>
+                 
+                <!-- Reject booking button -->
+                <form method="post" action="{% url 'cancel_booking' notification.booking_id %}" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger fw-semibold">
+                        <i class="fas fa-times me-1"></i>Reject Booking
+                    </button>
+                </form>
+             
+            <!-- For confirmed bookings: Cancel button -->
+            {% elif notification.can_cancel and notification.booking_id %}
+                <!-- Cancel booking button (for owners) -->
+                <form method="post" action="{% url 'cancel_booking' notification.booking_id %}" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger fw-semibold">
+                        <i class="fas fa-ban me-1"></i>Cancel Booking
+                    </button>
+                </form>
+            {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Empty state when no notifications exist -->
+    {% empty %}
+    <div class="alert alert-info border-0 alert-dismissible fade show" role="alert">
+        <i class="fas fa-inbox me-2" style="font-size: 1.2rem;"></i>
+        <strong>No notifications yet!</strong> Your notifications will appear here.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</section>
+
+{% endblock %}
